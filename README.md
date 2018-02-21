@@ -5,14 +5,12 @@ This module provides a Monadic API for callback computations in BuckleScript app
 ## Installation
 
 ```
-yarn add https://github.com/ahrefs/bs-dotenv.git
+yarn add https://github.com/lidcore/bs-callback.git
 ```
 
 ## Usage
 
-Add `@ahrefs/bs-dotenv` to the `bs-dependencies` of `bsconfig.json`.
-
-See original [dotenv usage](https://github.com/motdotla/dotenv#usage).
+Add `@lidcore/bs-dotenv` to the `bs-dependencies` of `bsconfig.json`.
 
 ## Rationale
 
