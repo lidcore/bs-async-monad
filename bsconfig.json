@@ -1,5 +1,5 @@
 {
-  "name": "@ahrefs/bs-callback",
+  "name": "@lidcore/bs-callback",
   "sources": [
     "src",
     {
