@@ -10,7 +10,7 @@ yarn add https://github.com/lidcore/bs-callback.git
 
 ## Usage
 
-Add `@lidcore/bs-dotenv` to the `bs-dependencies` of `bsconfig.json`.
+Add `bs-callback` to the `bs-dependencies` of `bsconfig.json`.
 
 ## Rationale
 
