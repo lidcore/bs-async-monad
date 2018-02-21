@@ -1,6 +1,6 @@
 {
   "name": "bs-callback",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Callback monad for bucklescript applications",
   "main": "src/callback.bs.js",
   "scripts": {
