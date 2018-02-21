@@ -8,10 +8,8 @@
     }
   ],
   "package-specs": {
-    "module": "commonjs",
-    "in-source": true
+    "module": "commonjs"
   },
-  "suffix": ".bs.js",
   "bsc-flags": [
     "-bs-super-errors"
   ],
