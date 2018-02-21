@@ -1,0 +1,19 @@
+{
+  "name": "@ahrefs/bs-callback",
+  "sources": [
+    "src",
+    {
+      "dir": "examples",
+      "type": "dev"
+    }
+  ],
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  },
+  "suffix": ".bs.js",
+  "bsc-flags": [
+    "-bs-super-errors"
+  ],
+  "refmt": 3,
+}
