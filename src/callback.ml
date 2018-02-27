@@ -60,16 +60,13 @@ let finish t =
 let from_promise p = fun cb ->
   let on_success ret =
     return ret cb;
-    Js.Promise.resolve ()
+    Js.Promise.resolve ret
   in
   let on_error err =
     fail (Obj.magic err) cb;
     p
   in
-  let p =
-    Js.Promise.catch on_error p
-  in
-  ignore(Js.Promise.then_ on_success p)
+  ignore(Js.Promise.then_ on_success p |> Js.Promise.catch on_error)
 
 let to_promise fn =
   Js.Promise.make (fun ~resolve ~reject ->
