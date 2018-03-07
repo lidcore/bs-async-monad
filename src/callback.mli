@@ -24,8 +24,8 @@ val iteri  : (int -> 'a -> unit t) -> 'a list -> unit t
 
 (* Execute a computation and pass its result to a callback. Errors are
    thrown/raised. *)
-val execute : 'a t -> ('a -> unit) -> unit
-val finish  : unit t -> unit
+val execute : ?exceptionHandler:(exn->unit) -> 'a t -> ('a -> unit) -> unit
+val finish  : ?exceptionHandler:(exn->unit) -> unit t -> unit
 
 (* Interface with Promise API. *)
 val from_promise : 'a Js.Promise.t -> 'a t

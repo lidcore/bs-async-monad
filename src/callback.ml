@@ -48,14 +48,14 @@ let iteri fn l =
   in
   iter fn l
 
-let execute t cb =
+let execute ?(exceptionHandler=fun exn -> raise exn) t cb =
   t (fun [@bs] err ret ->
     match Js.toOption err with
       | None -> cb ret
-      | Some exn -> raise exn)
+      | Some exn -> exceptionHandler exn)
 
-let finish t =
-  execute t (fun _ -> ())
+let finish ?exceptionHandler t =
+  execute ?exceptionHandler t (fun _ -> ())
 
 let from_promise p = fun cb ->
   let on_success ret =
