@@ -15,7 +15,7 @@ let fail exn cb =
 (* Catch exception. *)
 let (||>) current catcher cb =
   let cb = fun [@bs] err ret ->
-    match Js.Nullable.to_opt err with
+    match Js.toOption err with
       | Some exn -> catcher exn cb
       | None     -> cb err ret [@bs]
   in
