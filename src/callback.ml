@@ -33,6 +33,13 @@ let (>>) current next cb =
   in
   current fn
 
+let rec fold_left fn cur l =
+  match l with
+    | [] -> cur
+    | el::l ->
+      fold_left fn (cur >> fun v ->
+        fn v el) l
+
 let iter fn l =
   let next cur el =
     cur >> fun _ ->

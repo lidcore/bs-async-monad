@@ -18,6 +18,8 @@ val (||>)  : 'a t -> (exn -> 'a t) -> 'a t
 (* Combine two computations. *)
 val (>>) : 'a t -> ('a -> 'b t) -> 'b t
 
+val fold_left : ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
+
 (* Iter over a list of computations. *)
 val iter   : ('a -> unit t) -> 'a list -> unit t
 val iteri  : (int -> 'a -> unit t) -> 'a list -> unit t
