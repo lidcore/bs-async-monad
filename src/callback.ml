@@ -33,7 +33,7 @@ let (>>) current next cb =
   in
   current fn
 
-let (!!) current cb =
+let (&>) current cb =
   (current ||> fun exn ->
     cb (); fail exn) >> fun ret ->
       cb (); return ret
