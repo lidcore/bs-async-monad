@@ -18,6 +18,9 @@ val (||>)  : 'a t -> (exn -> 'a t) -> 'a t
 (* Combine two computations. *)
 val (>>) : 'a t -> ('a -> 'b t) -> 'b t
 
+(* Execute a callback regardless of success or failure. *)
+val (!!) : 'a t -> (unit -> unit) -> 'a t
+
 val fold_left : ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
 
 (* Iter over a list of computations. *)

@@ -33,6 +33,12 @@ let (>>) current next cb =
   in
   current fn
 
+let (!!) current cb =
+  (current ||> fun exn ->
+    cb (); fail exn) >> fun ret ->
+      cb (); return ret
+    
+
 let rec fold_left fn cur l =
   match l with
     | [] -> cur
