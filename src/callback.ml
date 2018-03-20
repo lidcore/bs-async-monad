@@ -33,11 +33,10 @@ let (>>) current next cb =
   in
   current fn
 
-let (&>) current cb =
-  (current ||> fun exn ->
-    cb (); fail exn) >> fun ret ->
-      cb (); return ret
-    
+let (&>) current ensure cb =
+  current (fun [@bs] err ret ->
+    ensure (fun [@bs] _ _ ->
+      cb err ret [@bs]))
 
 let rec fold_left fn cur l =
   match l with
