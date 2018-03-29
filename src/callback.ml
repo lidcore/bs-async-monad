@@ -45,12 +45,22 @@ let rec fold_left fn cur l =
       fold_left fn (cur >> fun v ->
         fn v el) l
 
-let iter fn l =
-  let next cur el =
-    cur >> fun _ ->
-      fn el
+external setTimeout : (unit -> unit [@bs.uncurry]) -> float -> unit = "" [@@bs.val]
+
+let itera fn a cb =
+  let rec process () =
+    match Js.Array.pop a with
+      | Some v ->
+          fn v (fun [@bs] err () ->
+            match Js.toOption err with
+              | Some exn -> fail exn cb
+              | None -> setTimeout process 0.)
+      | None -> return () cb
   in
-  List.fold_left next (return ()) l 
+  setTimeout process 0.
+
+let iter fn l =
+  itera fn (Array.of_list l)
 
 let iteri fn l =
   let pos = ref (-1) in
