@@ -28,6 +28,11 @@ val itera : ('a -> unit t) -> 'a array -> unit t
 val iter   : ('a -> unit t) -> 'a list -> unit t
 val iteri  : (int -> 'a -> unit t) -> 'a list -> unit t
 
+(* Map results. Tail-recursive. *)
+val mapa : ('a -> 'b t) -> 'a array -> 'b array t
+val map  : ('a -> 'b t) -> 'a list -> 'b list t
+val mapi : (int -> 'a -> 'b t) -> 'a list -> 'b list t
+
 (* Execute a computation and pass its result to a callback. Errors are
    thrown/raised. *)
 val execute : ?exceptionHandler:(exn->unit) -> 'a t -> ('a -> unit) -> unit

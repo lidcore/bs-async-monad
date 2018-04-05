@@ -70,6 +70,28 @@ let iteri fn l =
   in
   iter fn l
 
+let mapa fn a =
+  let ret = [||] in
+  let map v =
+    fn v >> fun res ->
+      ignore(Js.Array.push res ret);
+      return ()
+  in
+  itera map a >> fun () ->
+    return ret
+
+let map fn l =
+  mapa fn (Array.of_list l) >> fun ret ->
+    return (Array.to_list ret)
+
+let mapi fn l =
+  let pos = ref (-1) in
+  let fn v = 
+    incr pos;
+    fn !pos v
+  in
+  map fn l
+
 let execute ?(exceptionHandler=fun exn -> raise exn) t cb =
   t (fun [@bs] err ret ->
     match Js.toOption err with
