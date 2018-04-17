@@ -1,4 +1,4 @@
-(* Callback type. Strict arity is enforced here. *)
+(* BsCallback type. Strict arity is enforced here. *)
 type error  = exn Js.Nullable.t
 type 'a callback = error -> 'a -> unit [@bs]
 

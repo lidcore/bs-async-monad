@@ -19,8 +19,8 @@ fashion without having to repeat the same patterns again. For instance, from the
 ```
 module Fs : sig
   type fd
-  val fopen  : string -> fd Callback.t
-  val unlink : string -> unit Callback.t
+  val fopen  : string -> fd BsCallback.t
+  val unlink : string -> unit BsCallback.t
 end
 
 (* Pipe two asynchronous computations: *)
@@ -36,7 +36,7 @@ This is similar to the `Promise` API but with less overhead and a focus on compo
 
 The API is as follows:
 ```
-(* Callback type. Strict arity is enforced here. *)
+(* BsCallback type. Strict arity is enforced here. *)
 type error  = exn Js.Nullable.t
 type 'a callback = error -> 'a -> unit [@bs]
 

@@ -1,7 +1,7 @@
 {
   "name": "bs-callback",
-  "version": "1.1.0",
-  "description": "Callback monad for bucklescript applications",
+  "version": "1.2.0",
+  "description": "BsCallback monad for bucklescript applications",
   "main": "lib/js/src/callback.js",
   "scripts": {
     "build": "bsb -make-world",
