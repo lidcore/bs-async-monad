@@ -47,6 +47,12 @@ function $unknown$great(current, ensure, cb) {
               }));
 }
 
+function ignore(fn, cb) {
+  return Curry._1(fn, (function (err, _) {
+                return cb(err, /* () */0);
+              }));
+}
+
 function fold_left(fn, _cur, _l) {
   while(true) {
     var l = _l;
@@ -205,6 +211,7 @@ exports.fail = fail;
 exports.$pipe$pipe$great = $pipe$pipe$great;
 exports.$great$great = $great$great;
 exports.$unknown$great = $unknown$great;
+exports.ignore = ignore;
 exports.fold_left = fold_left;
 exports.itera = itera;
 exports.iter = iter;

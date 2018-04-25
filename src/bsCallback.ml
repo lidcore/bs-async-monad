@@ -38,6 +38,12 @@ let (&>) current ensure cb =
     ensure (fun [@bs] _ _ ->
       cb err ret [@bs]))
 
+let orig_ignore = ignore
+
+let ignore fn cb =
+  fn (fun [@bs] err _ ->
+    cb err () [@bs])
+
 let rec fold_left fn cur l =
   match l with
     | [] -> cur
@@ -74,7 +80,7 @@ let mapa fn a =
   let ret = [||] in
   let map v =
     fn v >> fun res ->
-      ignore(Js.Array.push res ret);
+      orig_ignore(Js.Array.push res ret);
       return ()
   in
   itera map a >> fun () ->
@@ -110,7 +116,7 @@ let from_promise p = fun cb ->
     fail (Obj.magic err) cb;
     p
   in
-  ignore(Js.Promise.then_ on_success p |> Js.Promise.catch on_error)
+  orig_ignore(Js.Promise.then_ on_success p |> Js.Promise.catch on_error)
 
 let to_promise fn =
   Js.Promise.make (fun ~resolve ~reject ->

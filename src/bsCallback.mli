@@ -21,6 +21,9 @@ val (>>) : 'a t -> ('a -> 'b t) -> 'b t
 (* Execute a callback regardless of success or failure. *)
 val (&>) : 'a t -> unit t -> 'a t
 
+(* Discard a computation's result. *)
+val ignore : 'a t -> unit t
+
 val fold_left : ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
 
 (* Iter over a list or array of computations. Tail-recursive. *)
