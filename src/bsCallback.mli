@@ -22,7 +22,7 @@ val (>>) : 'a t -> ('a -> 'b t) -> 'b t
 val (&>) : 'a t -> unit t -> 'a t
 
 (* Discard a computation's result. *)
-val ignore : 'a t -> unit t
+val discard : 'a t -> unit t
 
 val fold_left : ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
 
