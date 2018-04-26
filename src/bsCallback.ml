@@ -45,6 +45,8 @@ let discard fn cb =
 external setTimeout : (unit -> unit [@bs.uncurry]) -> float -> unit = "" [@@bs.val]
 
 let itera ?(concurrency=1) fn a cb =
+  let total = Array.length a in
+  let executed = ref 0 in
   let rec process () =
     match Js.Array.pop a with
       | Some v ->
@@ -52,7 +54,10 @@ let itera ?(concurrency=1) fn a cb =
             match Js.toOption err with
               | Some exn -> fail exn cb
               | None -> setTimeout process 0.)
-      | None -> return () cb
+      | None ->
+          incr executed;
+          if !executed = total then
+            return () cb
   in
   for _ = 1 to concurrency do
     setTimeout process 0.

@@ -56,6 +56,8 @@ function discard(fn, cb) {
 
 function itera($staropt$star, fn, a, cb) {
   var concurrency = $staropt$star ? $staropt$star[0] : 1;
+  var total = a.length;
+  var executed = [0];
   var $$process = function () {
     var match = a.pop();
     if (match !== undefined) {
@@ -70,7 +72,12 @@ function itera($staropt$star, fn, a, cb) {
                     }
                   }));
     } else {
-      return cb(null, /* () */0);
+      executed[0] = executed[0] + 1 | 0;
+      if (executed[0] === total) {
+        return cb(null, /* () */0);
+      } else {
+        return 0;
+      }
     }
   };
   for(var _for = 1; _for <= concurrency; ++_for){
