@@ -12,37 +12,69 @@ let return x cb =
 let fail exn cb =
   cb (Js.Nullable.return exn) (Obj.magic Js.Nullable.null) [@bs]
 
-(* Catch exception. *)
-let (||>) current catcher cb =
-  let cb = fun [@bs] err ret ->
-    match Js.toOption err with
-      | Some exn -> catcher exn cb
-      | None     -> cb err ret [@bs]
-  in
-  current cb
+external setTimeout : (unit -> unit [@bs.uncurry]) -> float -> unit = "" [@@bs.val]
 
 (* Pipe current's result into next. *)
-let (>>) current next cb =
+let compose ?(noStack=false) current next cb =
   let fn = fun [@bs] err ret ->
     match Js.toOption err with
       | Some exn -> fail exn cb
       | None     ->
-         try
-           next ret cb
-         with exn -> fail exn cb
+         let next = fun () ->
+           try
+             next ret cb
+           with exn -> fail exn cb
+         in
+         if noStack then
+           setTimeout next 0.
+         else
+           next ()
   in
   current fn
 
-let (&>) current ensure cb =
+let (>>) = fun a b ->
+  compose a b
+
+(* Catch exception. *)
+let catch ?(noStack=false) current catcher cb =
+  let on_next next =
+    if noStack then
+      setTimeout next 0.
+    else
+      next ()
+  in
+  let cb = fun [@bs] err ret ->
+    match Js.toOption err with
+      | Some exn ->
+          on_next (fun () ->
+            catcher exn cb)
+      | None     ->
+          on_next (fun () ->
+            cb err ret [@bs])
+  in
+  current cb
+
+let (||>) = fun a b ->
+  catch a b
+
+let ensure ?(noStack=false) current ensure cb =
+  let on_next next =
+    if noStack then
+      setTimeout next 0.
+    else
+      next ()
+  in
   current (fun [@bs] err ret ->
-    ensure (fun [@bs] _ _ ->
-      cb err ret [@bs]))
+    on_next (fun () ->
+      ensure (fun [@bs] _ _ ->
+        cb err ret [@bs])))
+
+let (&>) = fun a b ->
+  ensure a b
 
 let discard fn cb =
   fn (fun [@bs] err _ ->
     cb err () [@bs])
-
-external setTimeout : (unit -> unit [@bs.uncurry]) -> float -> unit = "" [@@bs.val]
 
 let itera ?(concurrency=1) fn a cb =
   let total = Array.length a in

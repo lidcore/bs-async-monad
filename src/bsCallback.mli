@@ -12,14 +12,21 @@ val return : 'a -> 'a t
 (* A computation that returns an error. *)
 val fail : exn -> 'a t
 
+(* Combine two computations.
+ * Operates on a constanct call stack if [noStack] is true
+ * with the drawback that no call trace will be returned
+ * in case of error. Default: [false] *)
+val compose : ?noStack:bool -> 'a t -> ('a -> 'b t) -> 'b t
+val (>>)    : 'a t -> ('a -> 'b t) -> 'b t
+
 (* Catch errors raised during a computation. *)
+val catch  : ?noStack:bool -> 'a t -> (exn -> 'a t) -> 'a t
 val (||>)  : 'a t -> (exn -> 'a t) -> 'a t
 
-(* Combine two computations. *)
-val (>>) : 'a t -> ('a -> 'b t) -> 'b t
-
-(* Execute a callback regardless of success or failure. *)
-val (&>) : 'a t -> unit t -> 'a t
+(* Execute a callback regardless of success or failure.
+ * Errors raised by the [unit t] computation are discared. *)
+val ensure : ?noStack:bool -> 'a t -> unit t -> 'a t
+val (&>)   : 'a t -> unit t -> 'a t
 
 (* Discard a computation's result. *)
 val discard : 'a t -> unit t

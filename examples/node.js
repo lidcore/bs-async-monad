@@ -16,16 +16,14 @@ function unlink(path, cb) {
 }
 
 function unlink_if_fopen(path) {
-  return (function (param) {
-      return BsCallback.$great$great((function (param) {
-                    Fs.open(path, param);
-                    return /* () */0;
-                  }), (function () {
-                    return (function (param) {
-                        return unlink(path, param);
-                      });
-                  }), param);
-    });
+  return BsCallback.$great$great((function (param) {
+                Fs.open(path, param);
+                return /* () */0;
+              }), (function () {
+                return (function (param) {
+                    return unlink(path, param);
+                  });
+              }));
 }
 
 function Fs_000(prim, prim$1) {

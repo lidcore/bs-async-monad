@@ -14,25 +14,26 @@ function fail(exn, cb) {
   return cb(exn, null);
 }
 
-function $pipe$pipe$great(current, catcher, cb) {
+function compose($staropt$star, current, next, cb) {
+  var noStack = $staropt$star ? $staropt$star[0] : false;
   return Curry._1(current, (function (err, ret) {
                 if (err == null) {
-                  return cb(err, ret);
-                } else {
-                  return Curry._2(catcher, err, cb);
-                }
-              }));
-}
-
-function $great$great(current, next, cb) {
-  return Curry._1(current, (function (err, ret) {
-                if (err == null) {
-                  try {
-                    return Curry._2(next, ret, cb);
-                  }
-                  catch (raw_exn){
-                    var exn = Js_exn.internalToOCamlException(raw_exn);
-                    return cb(exn, null);
+                  var next$1 = function () {
+                    try {
+                      return Curry._2(next, ret, cb);
+                    }
+                    catch (raw_exn){
+                      var exn = Js_exn.internalToOCamlException(raw_exn);
+                      return cb(exn, null);
+                    }
+                  };
+                  if (noStack) {
+                    setTimeout((function () {
+                            return Curry._1(next$1(/* () */0), /* () */0);
+                          }), 0);
+                    return /* () */0;
+                  } else {
+                    return next$1(/* () */0);
                   }
                 } else {
                   return cb(err, null);
@@ -40,12 +41,66 @@ function $great$great(current, next, cb) {
               }));
 }
 
-function $unknown$great(current, ensure, cb) {
+function $great$great(a, b) {
+  return (function (param) {
+      return compose(/* None */0, a, b, param);
+    });
+}
+
+function $$catch($staropt$star, current, catcher, cb) {
+  var noStack = $staropt$star ? $staropt$star[0] : false;
+  var on_next = function (next) {
+    if (noStack) {
+      setTimeout((function () {
+              return Curry._1(next, /* () */0);
+            }), 0);
+      return /* () */0;
+    } else {
+      return Curry._1(next, /* () */0);
+    }
+  };
   return Curry._1(current, (function (err, ret) {
-                return Curry._1(ensure, (function (_, _$1) {
-                              return cb(err, ret);
-                            }));
+                if (err == null) {
+                  return on_next((function () {
+                                return cb(err, ret);
+                              }));
+                } else {
+                  return on_next((function () {
+                                return Curry._2(catcher, err, cb);
+                              }));
+                }
               }));
+}
+
+function $pipe$pipe$great(a, b) {
+  return (function (param) {
+      return $$catch(/* None */0, a, b, param);
+    });
+}
+
+function ensure($staropt$star, current, ensure$1, cb) {
+  var noStack = $staropt$star ? $staropt$star[0] : false;
+  return Curry._1(current, (function (err, ret) {
+                var next = function () {
+                  return Curry._1(ensure$1, (function (_, _$1) {
+                                return cb(err, ret);
+                              }));
+                };
+                if (noStack) {
+                  setTimeout((function () {
+                          return Curry._1(next, /* () */0);
+                        }), 0);
+                  return /* () */0;
+                } else {
+                  return Curry._1(next, /* () */0);
+                }
+              }));
+}
+
+function $unknown$great(a, b) {
+  return (function (param) {
+      return ensure(/* None */0, a, b, param);
+    });
 }
 
 function discard(fn, cb) {
@@ -105,7 +160,7 @@ function fold_lefta(concurrency, fn, a, ba) {
   var fn$1 = function (b) {
     var partial_arg = cur[0];
     return (function (param) {
-        return $great$great(partial_arg, (function (a) {
+        return compose(/* None */0, partial_arg, (function (a) {
                       cur[0] = Curry._2(fn, a, b);
                       return (function (param) {
                           return param(null, /* () */0);
@@ -114,7 +169,7 @@ function fold_lefta(concurrency, fn, a, ba) {
       });
   };
   return (function (param) {
-      return $great$great((function (param) {
+      return compose(/* None */0, (function (param) {
                     return itera(concurrency, fn$1, ba, param);
                   }), (function () {
                     return cur[0];
@@ -144,7 +199,7 @@ function mapa(concurrency, fn, a) {
   var map = function (v) {
     var partial_arg = Curry._1(fn, v);
     return (function (param) {
-        return $great$great(partial_arg, (function (res) {
+        return compose(/* None */0, partial_arg, (function (res) {
                       ret.push(res);
                       return (function (param) {
                           return param(null, /* () */0);
@@ -153,7 +208,7 @@ function mapa(concurrency, fn, a) {
       });
   };
   return (function (param) {
-      return $great$great((function (param) {
+      return compose(/* None */0, (function (param) {
                     return itera(concurrency, map, a, param);
                   }), (function () {
                     return (function (param) {
@@ -166,7 +221,7 @@ function mapa(concurrency, fn, a) {
 function map(concurrency, fn, l) {
   var partial_arg = mapa(concurrency, fn, $$Array.of_list(l));
   return (function (param) {
-      return $great$great(partial_arg, (function (ret) {
+      return compose(/* None */0, partial_arg, (function (ret) {
                     var partial_arg = $$Array.to_list(ret);
                     return (function (param) {
                         return param(null, partial_arg);
@@ -234,8 +289,11 @@ function to_promise(fn) {
 
 exports.$$return = $$return;
 exports.fail = fail;
-exports.$pipe$pipe$great = $pipe$pipe$great;
+exports.compose = compose;
 exports.$great$great = $great$great;
+exports.$$catch = $$catch;
+exports.$pipe$pipe$great = $pipe$pipe$great;
+exports.ensure = ensure;
 exports.$unknown$great = $unknown$great;
 exports.discard = discard;
 exports.fold_lefta = fold_lefta;
