@@ -74,8 +74,11 @@ function itera($staropt$star, fn, a, cb) {
                         return /* () */0;
                       }
                     } else {
+                      if (!failed[0]) {
+                        cb(err, null);
+                      }
                       failed[0] = true;
-                      return cb(err, null);
+                      return /* () */0;
                     }
                   }));
     } else {

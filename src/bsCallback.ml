@@ -61,8 +61,9 @@ let itera ?(concurrency=1) fn a cb =
           fn v (fun [@bs] err () ->
             match Js.toOption err with
               | Some exn ->
-                  failed := true;
-                  fail exn cb
+                  if not !failed then
+                    fail exn cb;
+                  failed := true
               | None -> on_done ())
       | None -> ()
   in
