@@ -58,29 +58,31 @@ function itera($staropt$star, fn, a, cb) {
   var concurrency = $staropt$star ? $staropt$star[0] : 1;
   var total = a.length;
   var executed = [0];
+  var failed = [false];
   var $$process = function () {
     var match = a.pop();
     if (match !== undefined) {
       return Curry._2(fn, match, (function (err, _) {
                     if (err == null) {
-                      setTimeout((function () {
-                              return Curry._1($$process(/* () */0), /* () */0);
-                            }), 0);
-                      return /* () */0;
+                      executed[0] = executed[0] + 1 | 0;
+                      if (!failed[0] && executed[0] === total) {
+                        return cb(null, /* () */0);
+                      } else {
+                        setTimeout((function () {
+                                return Curry._1($$process(/* () */0), /* () */0);
+                              }), 0);
+                        return /* () */0;
+                      }
                     } else {
+                      failed[0] = true;
                       return cb(err, null);
                     }
                   }));
     } else {
-      executed[0] = executed[0] + 1 | 0;
-      if (executed[0] === total) {
-        return cb(null, /* () */0);
-      } else {
-        return 0;
-      }
+      return /* () */0;
     }
   };
-  for(var _for = 1; _for <= concurrency; ++_for){
+  for(var _for = 1 ,_for_finish = total < concurrency ? total : concurrency; _for <= _for_finish; ++_for){
     setTimeout((function () {
             return Curry._1($$process(/* () */0), /* () */0);
           }), 0);

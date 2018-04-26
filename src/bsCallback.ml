@@ -47,19 +47,26 @@ external setTimeout : (unit -> unit [@bs.uncurry]) -> float -> unit = "" [@@bs.v
 let itera ?(concurrency=1) fn a cb =
   let total = Array.length a in
   let executed = ref 0 in
+  let failed = ref false in
   let rec process () =
+    let on_done () =
+      incr executed;
+      if not !failed && !executed = total then
+        return () cb
+      else
+        setTimeout process 0.
+    in
     match Js.Array.pop a with
       | Some v ->
           fn v (fun [@bs] err () ->
             match Js.toOption err with
-              | Some exn -> fail exn cb
-              | None -> setTimeout process 0.)
-      | None ->
-          incr executed;
-          if !executed = total then
-            return () cb
+              | Some exn ->
+                  failed := true;
+                  fail exn cb
+              | None -> on_done ())
+      | None -> ()
   in
-  for _ = 1 to concurrency do
+  for _ = 1 to min total concurrency do
     setTimeout process 0.
   done
 
