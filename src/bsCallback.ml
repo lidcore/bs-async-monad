@@ -75,10 +75,12 @@ let fold_left ?concurrency fn cur l =
   fold_lefta ?concurrency fn cur (Array.of_list l)
 
 let iteri ?concurrency fn l =
-  let pos = ref (-1) in
-  let fn el =
-    incr pos;
-    fn !pos el
+  let l =
+    List.mapi (fun idx el ->
+      (idx,el)) l
+  in
+  let fn (idx,el) =
+    fn idx el
   in
   iter ?concurrency fn l
 
@@ -97,10 +99,12 @@ let map ?concurrency fn l =
     return (Array.to_list ret)
 
 let mapi ?concurrency fn l =
-  let pos = ref (-1) in
-  let fn v = 
-    incr pos;
-    fn !pos v
+  let l =
+    List.mapi (fun idx el ->
+      (idx,el)) l
+  in
+  let fn (idx,el) = 
+    fn idx el
   in
   map ?concurrency fn l
 
