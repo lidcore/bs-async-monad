@@ -44,7 +44,7 @@ let discard fn cb =
 
 external setTimeout : (unit -> unit [@bs.uncurry]) -> float -> unit = "" [@@bs.val]
 
-let itera fn a cb =
+let itera ?(concurrency=1) fn a cb =
   let rec process () =
     match Js.Array.pop a with
       | Some v ->
@@ -54,53 +54,55 @@ let itera fn a cb =
               | None -> setTimeout process 0.)
       | None -> return () cb
   in
-  setTimeout process 0.
+  for _ = 1 to concurrency do
+    setTimeout process 0.
+  done
 
-let iter fn l =
-  itera fn (Array.of_list l)
+let iter ?concurrency fn l =
+  itera ?concurrency fn (Array.of_list l)
 
-let fold_lefta fn a ba =
+let fold_lefta ?concurrency fn a ba =
   let cur = ref a in
   let fn b =
     !cur >> fun a ->
       cur := fn a b;
       return ()
   in
-  itera fn ba >> fun () ->
+  itera ?concurrency fn ba >> fun () ->
     !cur
 
-let fold_left fn cur l =
-  fold_lefta fn cur (Array.of_list l)
+let fold_left ?concurrency fn cur l =
+  fold_lefta ?concurrency fn cur (Array.of_list l)
 
-let iteri fn l =
+let iteri ?concurrency fn l =
   let pos = ref (-1) in
   let fn el =
     incr pos;
     fn !pos el
   in
-  iter fn l
+  iter ?concurrency fn l
 
-let mapa fn a =
+let mapa ?concurrency fn a =
   let ret = [||] in
   let map v =
     fn v >> fun res ->
       ignore(Js.Array.push res ret);
       return ()
   in
-  itera map a >> fun () ->
+  itera ?concurrency map a >> fun () ->
     return ret
 
-let map fn l =
-  mapa fn (Array.of_list l) >> fun ret ->
+let map ?concurrency fn l =
+  mapa ?concurrency fn (Array.of_list l) >> fun ret ->
     return (Array.to_list ret)
 
-let mapi fn l =
+let mapi ?concurrency fn l =
   let pos = ref (-1) in
   let fn v = 
     incr pos;
     fn !pos v
   in
-  map fn l
+  map ?concurrency fn l
 
 let execute ?(exceptionHandler=fun exn -> raise exn) t cb =
   t (fun [@bs] err ret ->

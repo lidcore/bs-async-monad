@@ -53,7 +53,8 @@ function discard(fn, cb) {
               }));
 }
 
-function itera(fn, a, cb) {
+function itera($staropt$star, fn, a, cb) {
+  var concurrency = $staropt$star ? $staropt$star[0] : 1;
   var $$process = function () {
     var match = a.pop();
     if (match !== undefined) {
@@ -71,20 +72,22 @@ function itera(fn, a, cb) {
       return cb(null, /* () */0);
     }
   };
-  setTimeout((function () {
-          return Curry._1($$process(/* () */0), /* () */0);
-        }), 0);
+  for(var _for = 1; _for <= concurrency; ++_for){
+    setTimeout((function () {
+            return Curry._1($$process(/* () */0), /* () */0);
+          }), 0);
+  }
   return /* () */0;
 }
 
-function iter(fn, l) {
+function iter(concurrency, fn, l) {
   var partial_arg = $$Array.of_list(l);
   return (function (param) {
-      return itera(fn, partial_arg, param);
+      return itera(concurrency, fn, partial_arg, param);
     });
 }
 
-function fold_lefta(fn, a, ba) {
+function fold_lefta(concurrency, fn, a, ba) {
   var cur = [a];
   var fn$1 = function (b) {
     var partial_arg = cur[0];
@@ -99,30 +102,27 @@ function fold_lefta(fn, a, ba) {
   };
   return (function (param) {
       return $great$great((function (param) {
-                    return itera(fn$1, ba, param);
+                    return itera(concurrency, fn$1, ba, param);
                   }), (function () {
                     return cur[0];
                   }), param);
     });
 }
 
-function fold_left(fn, cur, l) {
-  return fold_lefta(fn, cur, $$Array.of_list(l));
+function fold_left(concurrency, fn, cur, l) {
+  return fold_lefta(concurrency, fn, cur, $$Array.of_list(l));
 }
 
-function iteri(fn, l) {
+function iteri(concurrency, fn, l) {
   var pos = [-1];
   var fn$1 = function (el) {
     pos[0] = pos[0] + 1 | 0;
     return Curry._2(fn, pos[0], el);
   };
-  var partial_arg = $$Array.of_list(l);
-  return (function (param) {
-      return itera(fn$1, partial_arg, param);
-    });
+  return iter(concurrency, fn$1, l);
 }
 
-function mapa(fn, a) {
+function mapa(concurrency, fn, a) {
   var ret = /* array */[];
   var map = function (v) {
     var partial_arg = Curry._1(fn, v);
@@ -137,7 +137,7 @@ function mapa(fn, a) {
   };
   return (function (param) {
       return $great$great((function (param) {
-                    return itera(map, a, param);
+                    return itera(concurrency, map, a, param);
                   }), (function () {
                     return (function (param) {
                         return param(null, ret);
@@ -146,8 +146,8 @@ function mapa(fn, a) {
     });
 }
 
-function map(fn, l) {
-  var partial_arg = mapa(fn, $$Array.of_list(l));
+function map(concurrency, fn, l) {
+  var partial_arg = mapa(concurrency, fn, $$Array.of_list(l));
   return (function (param) {
       return $great$great(partial_arg, (function (ret) {
                     var partial_arg = $$Array.to_list(ret);
@@ -158,13 +158,13 @@ function map(fn, l) {
     });
 }
 
-function mapi(fn, l) {
+function mapi(concurrency, fn, l) {
   var pos = [-1];
   var fn$1 = function (v) {
     pos[0] = pos[0] + 1 | 0;
     return Curry._2(fn, pos[0], v);
   };
-  return map(fn$1, l);
+  return map(concurrency, fn$1, l);
 }
 
 function execute($staropt$star, t, cb) {

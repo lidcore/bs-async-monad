@@ -24,19 +24,27 @@ val (&>) : 'a t -> unit t -> 'a t
 (* Discard a computation's result. *)
 val discard : 'a t -> unit t
 
-(* Fold over a list or array of elements. Tail-recursive. *)
-val fold_lefta : ('a -> 'b -> 'a t) -> 'a t -> 'b array -> 'a t 
-val fold_left  : ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
+(* In the following [concurrency] refers to the number
+ * of concurrent executions. It is meant as in the node
+ * model of concurrency, i.e. JS code is always non-concurrent
+ * but e.g. HTTP Get calls can be queued via the event loop. *)
 
-(* Iter over a list or array of computations. Tail-recursive. *)
-val itera : ('a -> unit t) -> 'a array -> unit t
-val iter   : ('a -> unit t) -> 'a list -> unit t
-val iteri  : (int -> 'a -> unit t) -> 'a list -> unit t
+(* Fold over a list or array of elements. Tail-recursive.
+ * Result order will be shuffled when using concurrency > 1. *)
+val fold_lefta : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b array -> 'a t 
+val fold_left  : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
 
-(* Map results. Tail-recursive. *)
-val mapa : ('a -> 'b t) -> 'a array -> 'b array t
-val map  : ('a -> 'b t) -> 'a list -> 'b list t
-val mapi : (int -> 'a -> 'b t) -> 'a list -> 'b list t
+(* Iter over a list or array of computations. Tail-recursive.
+ * Execution order will be shuffled when using concurrency > 1. *)
+val itera  : ?concurrency:int -> ('a -> unit t) -> 'a array -> unit t
+val iter   : ?concurrency:int -> ('a -> unit t) -> 'a list -> unit t
+val iteri  : ?concurrency:int -> (int -> 'a -> unit t) -> 'a list -> unit t
+
+(* Map results. Tail-recursive.
+ * Result order will be shuffled when using concurrency > 1. *)
+val mapa : ?concurrency:int -> ('a -> 'b t) -> 'a array -> 'b array t
+val map  : ?concurrency:int -> ('a -> 'b t) -> 'a list -> 'b list t
+val mapi : ?concurrency:int -> (int -> 'a -> 'b t) -> 'a list -> 'b list t
 
 (* Execute a computation and pass its result to a callback. Errors are
    thrown/raised. *)
