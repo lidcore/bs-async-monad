@@ -53,27 +53,6 @@ function discard(fn, cb) {
               }));
 }
 
-function fold_left(fn, _cur, _l) {
-  while(true) {
-    var l = _l;
-    var cur = _cur;
-    if (l) {
-      var el = l[0];
-      _l = l[1];
-      _cur = (function(cur,el){
-      return function (param) {
-        return $great$great(cur, (function (v) {
-                      return Curry._2(fn, v, el);
-                    }), param);
-      }
-      }(cur,el));
-      continue ;
-    } else {
-      return cur;
-    }
-  };
-}
-
 function itera(fn, a, cb) {
   var $$process = function () {
     var match = a.pop();
@@ -103,6 +82,32 @@ function iter(fn, l) {
   return (function (param) {
       return itera(fn, partial_arg, param);
     });
+}
+
+function fold_lefta(fn, a, ba) {
+  var cur = [a];
+  var fn$1 = function (b) {
+    var partial_arg = cur[0];
+    return (function (param) {
+        return $great$great(partial_arg, (function (a) {
+                      cur[0] = Curry._2(fn, a, b);
+                      return (function (param) {
+                          return param(null, /* () */0);
+                        });
+                    }), param);
+      });
+  };
+  return (function (param) {
+      return $great$great((function (param) {
+                    return itera(fn$1, ba, param);
+                  }), (function () {
+                    return cur[0];
+                  }), param);
+    });
+}
+
+function fold_left(fn, cur, l) {
+  return fold_lefta(fn, cur, $$Array.of_list(l));
 }
 
 function iteri(fn, l) {
@@ -212,6 +217,7 @@ exports.$pipe$pipe$great = $pipe$pipe$great;
 exports.$great$great = $great$great;
 exports.$unknown$great = $unknown$great;
 exports.discard = discard;
+exports.fold_lefta = fold_lefta;
 exports.fold_left = fold_left;
 exports.itera = itera;
 exports.iter = iter;

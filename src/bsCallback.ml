@@ -42,13 +42,6 @@ let discard fn cb =
   fn (fun [@bs] err _ ->
     cb err () [@bs])
 
-let rec fold_left fn cur l =
-  match l with
-    | [] -> cur
-    | el::l ->
-      fold_left fn (cur >> fun v ->
-        fn v el) l
-
 external setTimeout : (unit -> unit [@bs.uncurry]) -> float -> unit = "" [@@bs.val]
 
 let itera fn a cb =
@@ -65,6 +58,19 @@ let itera fn a cb =
 
 let iter fn l =
   itera fn (Array.of_list l)
+
+let fold_lefta fn a ba =
+  let cur = ref a in
+  let fn b =
+    !cur >> fun a ->
+      cur := fn a b;
+      return ()
+  in
+  itera fn ba >> fun () ->
+    !cur
+
+let fold_left fn cur l =
+  fold_lefta fn cur (Array.of_list l)
 
 let iteri fn l =
   let pos = ref (-1) in

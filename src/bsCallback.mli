@@ -24,7 +24,9 @@ val (&>) : 'a t -> unit t -> 'a t
 (* Discard a computation's result. *)
 val discard : 'a t -> unit t
 
-val fold_left : ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
+(* Fold over a list or array of elements. Tail-recursive. *)
+val fold_lefta : ('a -> 'b -> 'a t) -> 'a t -> 'b array -> 'a t 
+val fold_left  : ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
 
 (* Iter over a list or array of computations. Tail-recursive. *)
 val itera : ('a -> unit t) -> 'a array -> unit t
