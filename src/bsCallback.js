@@ -114,7 +114,11 @@ function itera($staropt$star, fn, a, cb) {
       return Curry._2(fn, match, (function (err, _) {
                     if (err == null) {
                       executed[0] = executed[0] + 1 | 0;
-                      if (!failed[0] && executed[0] === total) {
+                      var match = failed[0];
+                      var match$1 = executed[0];
+                      if (match) {
+                        return /* () */0;
+                      } else if (match$1 === total) {
                         return cb(null, /* () */0);
                       } else {
                         setTimeout((function () {

@@ -83,10 +83,12 @@ let itera ?(concurrency=1) fn a cb =
   let rec process () =
     let on_done () =
       incr executed;
-      if not !failed && !executed = total then
-        return () cb
-      else
-        setTimeout (fun [@bs] () -> process ()) 0.
+      match !failed, !executed with
+        | true, _ -> ()
+        | false, n when n = total ->
+            return () cb
+        | _ ->
+            setTimeout (fun [@bs] () -> process ()) 0.
     in
     match Js.Array.pop a with
       | Some v ->
