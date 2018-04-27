@@ -12,7 +12,7 @@ let return x cb =
 let fail exn cb =
   cb (Js.Nullable.return exn) (Obj.magic Js.Nullable.null) [@bs]
 
-external setTimeout : (unit -> unit [@bs.uncurry]) -> float -> unit = "" [@@bs.val]
+external setTimeout : (unit -> unit [@bs]) -> float -> unit = "" [@@bs.val]
 
 (* Pipe current's result into next. *)
 let compose ?(noStack=false) current next cb =
@@ -20,7 +20,7 @@ let compose ?(noStack=false) current next cb =
     match Js.toOption err with
       | Some exn -> fail exn cb
       | None     ->
-         let next = fun () ->
+         let next = fun [@bs] () ->
            try
              next ret cb
            with exn -> fail exn cb
@@ -28,7 +28,7 @@ let compose ?(noStack=false) current next cb =
          if noStack then
            setTimeout next 0.
          else
-           next ()
+           next () [@bs]
   in
   current fn
 
@@ -41,15 +41,15 @@ let catch ?(noStack=false) current catcher cb =
     if noStack then
       setTimeout next 0.
     else
-      next ()
+      next () [@bs]
   in
   let cb = fun [@bs] err ret ->
     match Js.toOption err with
       | Some exn ->
-          on_next (fun () ->
+          on_next (fun [@bs] () ->
             catcher exn cb)
       | None     ->
-          on_next (fun () ->
+          on_next (fun [@bs] () ->
             cb err ret [@bs])
   in
   current cb
@@ -62,10 +62,10 @@ let ensure ?(noStack=false) current ensure cb =
     if noStack then
       setTimeout next 0.
     else
-      next ()
+      next () [@bs]
   in
   current (fun [@bs] err ret ->
-    on_next (fun () ->
+    on_next (fun [@bs] () ->
       ensure (fun [@bs] _ _ ->
         cb err ret [@bs])))
 
@@ -86,7 +86,7 @@ let itera ?(concurrency=1) fn a cb =
       if not !failed && !executed = total then
         return () cb
       else
-        setTimeout process 0.
+        setTimeout (fun [@bs] () -> process ()) 0.
     in
     match Js.Array.pop a with
       | Some v ->
@@ -100,7 +100,7 @@ let itera ?(concurrency=1) fn a cb =
       | None -> ()
   in
   for _ = 1 to min total concurrency do
-    setTimeout process 0.
+    setTimeout (fun [@bs] () -> process ()) 0.
   done
 
 let iter ?concurrency fn l =

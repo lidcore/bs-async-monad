@@ -28,12 +28,10 @@ function compose($staropt$star, current, next, cb) {
                     }
                   };
                   if (noStack) {
-                    setTimeout((function () {
-                            return Curry._1(next$1(/* () */0), /* () */0);
-                          }), 0);
+                    setTimeout(next$1, 0);
                     return /* () */0;
                   } else {
-                    return next$1(/* () */0);
+                    return next$1();
                   }
                 } else {
                   return cb(err, null);
@@ -51,12 +49,10 @@ function $$catch($staropt$star, current, catcher, cb) {
   var noStack = $staropt$star ? $staropt$star[0] : false;
   var on_next = function (next) {
     if (noStack) {
-      setTimeout((function () {
-              return Curry._1(next, /* () */0);
-            }), 0);
+      setTimeout(next, 0);
       return /* () */0;
     } else {
-      return Curry._1(next, /* () */0);
+      return next();
     }
   };
   return Curry._1(current, (function (err, ret) {
@@ -87,12 +83,10 @@ function ensure($staropt$star, current, ensure$1, cb) {
                               }));
                 };
                 if (noStack) {
-                  setTimeout((function () {
-                          return Curry._1(next, /* () */0);
-                        }), 0);
+                  setTimeout(next, 0);
                   return /* () */0;
                 } else {
-                  return Curry._1(next, /* () */0);
+                  return next();
                 }
               }));
 }
@@ -124,7 +118,7 @@ function itera($staropt$star, fn, a, cb) {
                         return cb(null, /* () */0);
                       } else {
                         setTimeout((function () {
-                                return Curry._1($$process(/* () */0), /* () */0);
+                                return $$process(/* () */0);
                               }), 0);
                         return /* () */0;
                       }
@@ -142,7 +136,7 @@ function itera($staropt$star, fn, a, cb) {
   };
   for(var _for = 1 ,_for_finish = total < concurrency ? total : concurrency; _for <= _for_finish; ++_for){
     setTimeout((function () {
-            return Curry._1($$process(/* () */0), /* () */0);
+            return $$process(/* () */0);
           }), 0);
   }
   return /* () */0;
