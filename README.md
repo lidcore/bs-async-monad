@@ -5,12 +5,19 @@ This module provides a Monadic API for callback computations in BuckleScript app
 ## Installation
 
 ```
-yarn add https://github.com/lidcore/bs-callback.git
+npm install [--save] bs-callback
 ```
 
-## Usage
+Then add it to your `bsconfig.json`:
 
-Add `bs-callback` to the `bs-dependencies` of `bsconfig.json`.
+```
+  ...
+  "bs-dependencies" : [
+    "bs-callback",
+    ...
+    ],
+  ...
+```
 
 ## Rationale
 
