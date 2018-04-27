@@ -13,7 +13,7 @@ val return : 'a -> 'a t
 val fail : exn -> 'a t
 
 (* Combine two computations.
- * Operates on a constanct call stack if [noStack] is true
+ * Operates on a constant call stack if [noStack] is true
  * with the drawback that no call trace will be returned
  * in case of error. Default: [false] *)
 val compose : ?noStack:bool -> 'a t -> ('a -> 'b t) -> 'b t
