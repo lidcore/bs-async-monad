@@ -119,6 +119,16 @@ let fold_lefta ?concurrency fn a ba =
 let fold_left ?concurrency fn cur l =
   fold_lefta ?concurrency fn cur (Array.of_list l)
 
+let fold_lefti ?concurrency fn cur l =
+  let l =
+    List.mapi (fun idx el ->
+      (idx,el)) l
+  in
+  let fn cur (idx,el) =
+    fn cur idx el
+  in
+  fold_left ?concurrency fn cur l
+
 let iteri ?concurrency fn l =
   let l =
     List.mapi (fun idx el ->

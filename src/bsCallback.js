@@ -175,6 +175,19 @@ function fold_left(concurrency, fn, cur, l) {
   return fold_lefta(concurrency, fn, cur, $$Array.of_list(l));
 }
 
+function fold_lefti(concurrency, fn, cur, l) {
+  var l$1 = List.mapi((function (idx, el) {
+          return /* tuple */[
+                  idx,
+                  el
+                ];
+        }), l);
+  var fn$1 = function (cur, param) {
+    return Curry._3(fn, cur, param[0], param[1]);
+  };
+  return fold_left(concurrency, fn$1, cur, l$1);
+}
+
 function iteri(concurrency, fn, l) {
   var l$1 = List.mapi((function (idx, el) {
           return /* tuple */[
@@ -292,6 +305,7 @@ exports.$unknown$great = $unknown$great;
 exports.discard = discard;
 exports.fold_lefta = fold_lefta;
 exports.fold_left = fold_left;
+exports.fold_lefti = fold_lefti;
 exports.itera = itera;
 exports.iter = iter;
 exports.iteri = iteri;

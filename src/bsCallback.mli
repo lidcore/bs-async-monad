@@ -40,6 +40,7 @@ val discard : 'a t -> unit t
  * Result order will be shuffled when using concurrency > 1. *)
 val fold_lefta : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b array -> 'a t 
 val fold_left  : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
+val fold_lefti : ?concurrency:int -> ('a -> int -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
 
 (* Iter over a list or array of computations. Tail-recursive.
  * Execution order will be shuffled when using concurrency > 1. *)
