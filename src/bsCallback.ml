@@ -79,18 +79,15 @@ let discard fn cb =
 let repeat condition computation cb =
   let rec exec () =
     condition (fun [@bs] err ret ->
-      if Js.Nullable.test err then
-        cb err () [@bs]
-      else
-        if ret then
-          computation (fun [@bs] err ret ->
-            if Js.Nullable.test err then
-              cb err ret [@bs]
-            else
-              setTimeout (fun [@bs] () ->
-                exec ()) 0.)
-        else
-          cb Js.Nullable.null () [@bs])   
+      match Js.Nullable.test err, ret with
+        | true, true ->
+            computation (fun [@bs] err ret ->
+              if Js.Nullable.test err then
+                cb err ret [@bs]
+              else
+                setTimeout (fun [@bs] () ->
+                  exec ()) 0.)
+        | _ -> cb err () [@bs])
   in
   setTimeout (fun [@bs] () ->
     exec ()) 0.

@@ -106,9 +106,8 @@ function discard(fn, cb) {
 function repeat(condition, computation, cb) {
   var exec = function () {
     return Curry._1(condition, (function (err, ret) {
-                  if (err == null) {
-                    return cb(err, /* () */0);
-                  } else if (ret) {
+                  var match = (err == null);
+                  if (match && ret) {
                     return Curry._1(computation, (function (err, ret) {
                                   if (err == null) {
                                     return cb(err, ret);
@@ -120,7 +119,7 @@ function repeat(condition, computation, cb) {
                                   }
                                 }));
                   } else {
-                    return cb(null, /* () */0);
+                    return cb(err, /* () */0);
                   }
                 }));
   };
