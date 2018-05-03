@@ -136,7 +136,7 @@ function itera($staropt$star, fn, a, cb) {
   var executed = [0];
   var failed = [false];
   var $$process = function () {
-    var match = a.pop();
+    var match = a.shift();
     if (match !== undefined) {
       return Curry._2(fn, match, (function (err, _) {
                     if (err == null) {

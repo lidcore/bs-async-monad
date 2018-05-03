@@ -109,7 +109,7 @@ let itera ?(concurrency=1) fn a cb =
         | _ ->
             setTimeout (fun [@bs] () -> process ()) 0.
     in
-    match Js.Array.pop a with
+    match Js.Array.shift a with
       | Some v ->
           fn v (fun [@bs] err () ->
             match Js.toOption err with
