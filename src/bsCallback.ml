@@ -76,6 +76,25 @@ let discard fn cb =
   fn (fun [@bs] err _ ->
     cb err () [@bs])
 
+let repeat condition computation cb =
+  let rec exec () =
+    condition (fun [@bs] err ret ->
+      if Js.Nullable.test err then
+        cb err () [@bs]
+      else
+        if ret then
+          computation (fun [@bs] err ret ->
+            if Js.Nullable.test err then
+              cb err ret [@bs]
+            else
+              setTimeout (fun [@bs] () ->
+                exec ()) 0.)
+        else
+          cb Js.Nullable.null () [@bs])   
+  in
+  setTimeout (fun [@bs] () ->
+    exec ()) 0.
+
 let itera ?(concurrency=1) fn a cb =
   let total = Array.length a in
   let executed = ref 0 in

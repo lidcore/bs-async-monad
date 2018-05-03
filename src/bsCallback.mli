@@ -31,6 +31,9 @@ val (&>)   : 'a t -> unit t -> 'a t
 (* Discard a computation's result. *)
 val discard : 'a t -> unit t
 
+(* Repeat a computation. Tail-recursive. *)
+val repeat : bool t -> unit t -> unit t
+
 (* In the following [concurrency] refers to the number
  * of concurrent executions. It is meant as in the node
  * model of concurrency, i.e. JS code is always non-concurrent

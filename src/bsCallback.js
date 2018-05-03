@@ -103,6 +103,33 @@ function discard(fn, cb) {
               }));
 }
 
+function repeat(condition, computation, cb) {
+  var exec = function () {
+    return Curry._1(condition, (function (err, ret) {
+                  if (err == null) {
+                    return cb(err, /* () */0);
+                  } else if (ret) {
+                    return Curry._1(computation, (function (err, ret) {
+                                  if (err == null) {
+                                    return cb(err, ret);
+                                  } else {
+                                    setTimeout((function () {
+                                            return exec(/* () */0);
+                                          }), 0);
+                                    return /* () */0;
+                                  }
+                                }));
+                  } else {
+                    return cb(null, /* () */0);
+                  }
+                }));
+  };
+  setTimeout((function () {
+          return exec(/* () */0);
+        }), 0);
+  return /* () */0;
+}
+
 function itera($staropt$star, fn, a, cb) {
   var concurrency = $staropt$star ? $staropt$star[0] : 1;
   var total = a.length;
@@ -307,6 +334,7 @@ exports.$pipe$pipe$great = $pipe$pipe$great;
 exports.ensure = ensure;
 exports.$unknown$great = $unknown$great;
 exports.discard = discard;
+exports.repeat = repeat;
 exports.fold_lefta = fold_lefta;
 exports.fold_left = fold_left;
 exports.fold_lefti = fold_lefti;
