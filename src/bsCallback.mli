@@ -57,6 +57,11 @@ val mapa : ?concurrency:int -> ('a -> 'b t) -> 'a array -> 'b array t
 val map  : ?concurrency:int -> ('a -> 'b t) -> 'a list -> 'b list t
 val mapi : ?concurrency:int -> (int -> 'a -> 'b t) -> 'a list -> 'b list t
 
+(* Execute a sequence of computations.
+ * Execution order will be shuffled when using concurrency > 1. *)
+val seqa : ?concurrency:int -> unit t array -> unit t
+val seq  : ?concurrency:int -> unit t list -> unit t
+
 (* Execute a computation and pass its result to a callback.
  * Default [exceptionHandler] raises any received exception. *)
 val execute : ?exceptionHandler:(exn->unit) -> 'a t -> ('a -> unit) -> unit

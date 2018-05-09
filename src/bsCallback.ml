@@ -181,6 +181,12 @@ let mapi ?concurrency fn l =
   in
   map ?concurrency fn l
 
+let seqa ?concurrency a =
+  itera ?concurrency (fun v -> v >> return) a
+
+let seq ?concurrency l =
+  seqa ?concurrency (Array.of_list l)
+
 let execute ?(exceptionHandler=fun exn -> raise exn) t cb =
   t (fun [@bs] err ret ->
     match Js.toOption err with

@@ -280,6 +280,20 @@ function mapi(concurrency, fn, l) {
   return map(concurrency, fn$1, l$1);
 }
 
+function seqa(concurrency, a) {
+  return (function (param) {
+      return itera(concurrency, (function (v) {
+                    return (function (param) {
+                        return compose(/* None */0, v, $$return, param);
+                      });
+                  }), a, param);
+    });
+}
+
+function seq(concurrency, l) {
+  return seqa(concurrency, $$Array.of_list(l));
+}
+
 function execute($staropt$star, t, cb) {
   var exceptionHandler = $staropt$star ? $staropt$star[0] : (function (exn) {
         throw exn;
@@ -343,6 +357,8 @@ exports.iteri = iteri;
 exports.mapa = mapa;
 exports.map = map;
 exports.mapi = mapi;
+exports.seqa = seqa;
+exports.seq = seq;
 exports.execute = execute;
 exports.finish = finish;
 exports.from_promise = from_promise;
