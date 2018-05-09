@@ -78,7 +78,7 @@ let discard fn cb =
 
 let repeat condition computation cb =
   let rec exec () =
-    condition (fun [@bs] err ret ->
+    condition () (fun [@bs] err ret ->
       match Js.Nullable.test err, ret with
         | true, true ->
             computation (fun [@bs] err ret ->

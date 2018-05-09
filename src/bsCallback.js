@@ -105,7 +105,7 @@ function discard(fn, cb) {
 
 function repeat(condition, computation, cb) {
   var exec = function () {
-    return Curry._1(condition, (function (err, ret) {
+    return Curry._2(condition, /* () */0, (function (err, ret) {
                   var match = (err == null);
                   if (match && ret) {
                     return Curry._1(computation, (function (err, ret) {

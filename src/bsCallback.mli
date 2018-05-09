@@ -32,7 +32,7 @@ val (&>)   : 'a t -> unit t -> 'a t
 val discard : 'a t -> unit t
 
 (* Repeat a computation. Tail-recursive. *)
-val repeat : bool t -> unit t -> unit t
+val repeat : (unit -> bool t) -> unit t -> unit t
 
 (* In the following [concurrency] refers to the number
  * of concurrent executions. It is meant as in the node
