@@ -320,7 +320,7 @@ function from_promise(p, cb) {
   };
   var on_error = function (err) {
     cb(err, null);
-    return p;
+    return Promise.resolve(/* () */0);
   };
   p.then(on_success).catch(on_error);
   return /* () */0;

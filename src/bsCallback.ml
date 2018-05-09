@@ -201,9 +201,20 @@ let from_promise p = fun cb ->
     return ret cb;
     Js.Promise.resolve ret
   in
+  (* There's an inherent conflict here between dynamically typed JS world
+   * and statically typed BS/OCaml world. The promise API says that the
+   * value returned by the onError handler determines the value or error
+   * with which the promise gets resolved.
+   * In JS world, that means that you can just do console.log and the promise
+   * gets resolved with null/unit whatever.
+   * But in statically typed world the promise is of type 'a and needs a
+   * type 'a to resolve and since this code is generic, we have no idea how
+   * to produce a value of type 'a. Also, if we return the original promise,
+   * the runtime thinks that we're not handling errors and complains about it.
+   * Thus: Obj.magic. 😳 *)
   let on_error err =
     fail (Obj.magic err) cb;
-    p
+    Js.Promise.resolve (Obj.magic ())
   in
   ignore(Js.Promise.then_ on_success p |> Js.Promise.catch on_error)
 
