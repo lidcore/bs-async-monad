@@ -25,14 +25,14 @@ val (||>)  : 'a t -> (exn -> 'a t) -> 'a t
 
 (* Execute a callback regardless of success or failure.
  * Errors raised by the [unit t] computation are discared. *)
-val ensure : ?noStack:bool -> 'a t -> unit t -> 'a t
-val (&>)   : 'a t -> unit t -> 'a t
+val ensure : ?noStack:bool -> 'a t -> (unit -> unit t) -> 'a t
+val (&>)   : 'a t -> (unit -> unit t) -> 'a t
 
 (* Discard a computation's result. *)
 val discard : 'a t -> unit t
 
 (* Repeat a computation. Tail-recursive. *)
-val repeat : (unit -> bool t) -> unit t -> unit t
+val repeat : (unit -> bool t) -> (unit -> unit t) -> unit t
 
 (* In the following [concurrency] refers to the number
  * of concurrent executions. It is meant as in the node

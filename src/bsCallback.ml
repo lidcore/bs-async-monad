@@ -66,7 +66,7 @@ let ensure ?(noStack=false) current ensure cb =
   in
   current (fun [@bs] err ret ->
     on_next (fun [@bs] () ->
-      ensure (fun [@bs] _ _ ->
+      ensure () (fun [@bs] _ _ ->
         cb err ret [@bs])))
 
 let (&>) = fun a b ->
@@ -81,7 +81,7 @@ let repeat condition computation cb =
     condition () (fun [@bs] err ret ->
       match Js.Nullable.test err, ret with
         | true, true ->
-            computation (fun [@bs] err ret ->
+            computation () (fun [@bs] err ret ->
               if Js.Nullable.test err then
                 cb err ret [@bs]
               else

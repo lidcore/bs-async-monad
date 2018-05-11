@@ -78,7 +78,7 @@ function ensure($staropt$star, current, ensure$1, cb) {
   var noStack = $staropt$star ? $staropt$star[0] : false;
   return Curry._1(current, (function (err, ret) {
                 var next = function () {
-                  return Curry._1(ensure$1, (function (_, _$1) {
+                  return Curry._2(ensure$1, /* () */0, (function (_, _$1) {
                                 return cb(err, ret);
                               }));
                 };
@@ -108,7 +108,7 @@ function repeat(condition, computation, cb) {
     return Curry._2(condition, /* () */0, (function (err, ret) {
                   var match = (err == null);
                   if (match && ret) {
-                    return Curry._1(computation, (function (err, ret) {
+                    return Curry._2(computation, /* () */0, (function (err, ret) {
                                   if (err == null) {
                                     return cb(err, ret);
                                   } else {
