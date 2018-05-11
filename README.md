@@ -70,11 +70,14 @@ val (||>)  : 'a t -> (exn -> 'a t) -> 'a t
 
 (* Execute a callback regardless of success or failure.
  * Errors raised by the [unit t] computation are discared. *)
-val ensure : ?noStack:bool -> 'a t -> unit t -> 'a t
-val (&>)   : 'a t -> unit t -> 'a t
+val ensure : ?noStack:bool -> 'a t -> (unit -> unit t) -> 'a t
+val (&>)   : 'a t -> (unit -> unit t) -> 'a t
 
 (* Discard a computation's result. *)
 val discard : 'a t -> unit t
+
+(* Repeat a computation. Tail-recursive. *)
+val repeat : (unit -> bool t) -> (unit -> unit t) -> unit t
 
 (* In the following [concurrency] refers to the number
  * of concurrent executions. It is meant as in the node
@@ -98,6 +101,11 @@ val iteri  : ?concurrency:int -> (int -> 'a -> unit t) -> 'a list -> unit t
 val mapa : ?concurrency:int -> ('a -> 'b t) -> 'a array -> 'b array t
 val map  : ?concurrency:int -> ('a -> 'b t) -> 'a list -> 'b list t
 val mapi : ?concurrency:int -> (int -> 'a -> 'b t) -> 'a list -> 'b list t
+
+(* Execute a sequence of computations.
+ * Execution order will be shuffled when using concurrency > 1. *)
+val seqa : ?concurrency:int -> unit t array -> unit t
+val seq  : ?concurrency:int -> unit t list -> unit t
 
 (* Execute a computation and pass its result to a callback.
  * Default [exceptionHandler] raises any received exception. *)
