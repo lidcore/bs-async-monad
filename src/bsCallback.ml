@@ -35,21 +35,21 @@ let compose ?(noStack=false) current next cb =
 let (>>) = fun a b ->
   compose a b
 
+let on_next ~noStack next =
+  if noStack then
+    setTimeout next 0.
+  else
+    next () [@bs]
+
 (* Catch exception. *)
 let catch ?(noStack=false) current catcher cb =
-  let on_next next =
-    if noStack then
-      setTimeout next 0.
-    else
-      next () [@bs]
-  in
   let cb = fun [@bs] err ret ->
     match Js.toOption err with
       | Some exn ->
-          on_next (fun [@bs] () ->
+          on_next ~noStack (fun [@bs] () ->
             catcher exn cb)
       | None     ->
-          on_next (fun [@bs] () ->
+          on_next ~noStack (fun [@bs] () ->
             cb err ret [@bs])
   in
   current cb
@@ -57,15 +57,22 @@ let catch ?(noStack=false) current catcher cb =
 let (||>) = fun a b ->
   catch a b
 
-let ensure ?(noStack=false) current ensure cb =
-  let on_next next =
-    if noStack then
-      setTimeout next 0.
-    else
-      next () [@bs]
-  in
+let pipe ?(noStack=false) current fn cb =
   current (fun [@bs] err ret ->
-    on_next (fun [@bs] () ->
+    match Js.toOption err with
+      | Some exn ->
+        on_next ~noStack (fun [@bs] () ->
+          fail exn cb)
+      | None ->
+        on_next ~noStack (fun [@bs] () ->
+          return (fn ret) cb))
+
+let (>|) = fun a b ->
+  pipe a b
+
+let ensure ?(noStack=false) current ensure cb =
+  current (fun [@bs] err ret ->
+    on_next ~noStack (fun [@bs] () ->
       ensure () (fun [@bs] _ _ ->
         cb err ret [@bs])))
 

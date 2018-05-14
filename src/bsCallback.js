@@ -45,23 +45,24 @@ function $great$great(a, b) {
     });
 }
 
+function on_next(noStack, next) {
+  if (noStack) {
+    setTimeout(next, 0);
+    return /* () */0;
+  } else {
+    return next();
+  }
+}
+
 function $$catch($staropt$star, current, catcher, cb) {
   var noStack = $staropt$star ? $staropt$star[0] : false;
-  var on_next = function (next) {
-    if (noStack) {
-      setTimeout(next, 0);
-      return /* () */0;
-    } else {
-      return next();
-    }
-  };
   return Curry._1(current, (function (err, ret) {
                 if (err == null) {
-                  return on_next((function () {
+                  return on_next(noStack, (function () {
                                 return cb(err, ret);
                               }));
                 } else {
-                  return on_next((function () {
+                  return on_next(noStack, (function () {
                                 return Curry._2(catcher, err, cb);
                               }));
                 }
@@ -74,20 +75,35 @@ function $pipe$pipe$great(a, b) {
     });
 }
 
+function pipe($staropt$star, current, fn, cb) {
+  var noStack = $staropt$star ? $staropt$star[0] : false;
+  return Curry._1(current, (function (err, ret) {
+                if (err == null) {
+                  return on_next(noStack, (function () {
+                                return cb(null, Curry._1(fn, ret));
+                              }));
+                } else {
+                  return on_next(noStack, (function () {
+                                return cb(err, null);
+                              }));
+                }
+              }));
+}
+
+function $great$pipe(a, b) {
+  return (function (param) {
+      return pipe(/* None */0, a, b, param);
+    });
+}
+
 function ensure($staropt$star, current, ensure$1, cb) {
   var noStack = $staropt$star ? $staropt$star[0] : false;
   return Curry._1(current, (function (err, ret) {
-                var next = function () {
-                  return Curry._2(ensure$1, /* () */0, (function (_, _$1) {
-                                return cb(err, ret);
-                              }));
-                };
-                if (noStack) {
-                  setTimeout(next, 0);
-                  return /* () */0;
-                } else {
-                  return next();
-                }
+                return on_next(noStack, (function () {
+                              return Curry._2(ensure$1, /* () */0, (function (_, _$1) {
+                                            return cb(err, ret);
+                                          }));
+                            }));
               }));
 }
 
@@ -344,6 +360,8 @@ exports.compose = compose;
 exports.$great$great = $great$great;
 exports.$$catch = $$catch;
 exports.$pipe$pipe$great = $pipe$pipe$great;
+exports.pipe = pipe;
+exports.$great$pipe = $great$pipe;
 exports.ensure = ensure;
 exports.$unknown$great = $unknown$great;
 exports.discard = discard;

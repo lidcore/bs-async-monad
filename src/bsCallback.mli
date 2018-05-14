@@ -23,6 +23,11 @@ val (>>)    : 'a t -> ('a -> 'b t) -> 'b t
 val catch  : ?noStack:bool -> 'a t -> (exn -> 'a t) -> 'a t
 val (||>)  : 'a t -> (exn -> 'a t) -> 'a t
 
+(* Pipe a result through a function. Equivalent to:
+ * [computation >> fun v -> return (fn v)] *)
+val pipe : ?noStack:bool -> 'a t -> ('a -> 'b) -> 'b t
+val (>|) : 'a t -> ('a -> 'b) -> 'b t
+
 (* Execute a callback regardless of success or failure.
  * Errors raised by the [unit t] computation are discared. *)
 val ensure : ?noStack:bool -> 'a t -> (unit -> unit t) -> 'a t
