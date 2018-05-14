@@ -5,6 +5,7 @@ var List = require("bs-platform/lib/js/list.js");
 var $$Array = require("bs-platform/lib/js/array.js");
 var Curry = require("bs-platform/lib/js/curry.js");
 var Js_exn = require("bs-platform/lib/js/js_exn.js");
+var Caml_exceptions = require("bs-platform/lib/js/caml_exceptions.js");
 
 function $$return(x, cb) {
   return cb(null, x);
@@ -14,17 +15,34 @@ function fail(exn, cb) {
   return cb(exn, null);
 }
 
+var $$Error = Caml_exceptions.create("BsCallback.Error");
+
 function compose($staropt$star, current, next, cb) {
   var noStack = $staropt$star ? $staropt$star[0] : false;
   return Curry._1(current, (function (err, ret) {
                 if (err == null) {
                   var next$1 = function () {
                     try {
-                      return Curry._2(next, ret, cb);
+                      var next$2;
+                      try {
+                        next$2 = Curry._1(next, ret);
+                      }
+                      catch (raw_exn){
+                        var exn = Js_exn.internalToOCamlException(raw_exn);
+                        throw [
+                              $$Error,
+                              exn
+                            ];
+                      }
+                      return Curry._1(next$2, cb);
                     }
-                    catch (raw_exn){
-                      var exn = Js_exn.internalToOCamlException(raw_exn);
-                      return cb(exn, null);
+                    catch (raw_exn$1){
+                      var exn$1 = Js_exn.internalToOCamlException(raw_exn$1);
+                      if (exn$1[0] === $$Error) {
+                        return cb(exn$1[1], null);
+                      } else {
+                        throw exn$1;
+                      }
                     }
                   };
                   if (noStack) {
@@ -80,7 +98,28 @@ function pipe($staropt$star, current, fn, cb) {
   return Curry._1(current, (function (err, ret) {
                 if (err == null) {
                   return on_next(noStack, (function () {
-                                return cb(null, Curry._1(fn, ret));
+                                try {
+                                  var ret$1;
+                                  try {
+                                    ret$1 = Curry._1(fn, ret);
+                                  }
+                                  catch (raw_exn){
+                                    var exn = Js_exn.internalToOCamlException(raw_exn);
+                                    throw [
+                                          $$Error,
+                                          exn
+                                        ];
+                                  }
+                                  return cb(null, ret$1);
+                                }
+                                catch (raw_exn$1){
+                                  var exn$1 = Js_exn.internalToOCamlException(raw_exn$1);
+                                  if (exn$1[0] === $$Error) {
+                                    return cb(exn$1[1], null);
+                                  } else {
+                                    throw exn$1;
+                                  }
+                                }
                               }));
                 } else {
                   return on_next(noStack, (function () {

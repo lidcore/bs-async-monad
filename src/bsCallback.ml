@@ -14,6 +14,8 @@ let fail exn cb =
 
 external setTimeout : (unit -> unit [@bs]) -> float -> unit = "" [@@bs.val]
 
+exception Error of exn
+
 (* Pipe current's result into next. *)
 let compose ?(noStack=false) current next cb =
   let fn = fun [@bs] err ret ->
@@ -22,8 +24,13 @@ let compose ?(noStack=false) current next cb =
       | None     ->
          let next = fun [@bs] () ->
            try
-             next ret cb
-           with exn -> fail exn cb
+             let next =
+               try
+                 next ret
+               with exn -> raise (Error exn)
+             in
+             next cb
+           with Error exn -> fail exn cb
          in
          if noStack then
            setTimeout next 0.
@@ -65,7 +72,15 @@ let pipe ?(noStack=false) current fn cb =
           fail exn cb)
       | None ->
         on_next ~noStack (fun [@bs] () ->
-          return (fn ret) cb))
+          try
+            let ret =
+              try
+                fn ret
+              with exn -> raise (Error exn)
+            in
+            return ret cb
+          with Error exn ->
+            fail exn cb))
 
 let (>|) = fun a b ->
   pipe a b
