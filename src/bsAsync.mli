@@ -71,7 +71,7 @@ module type Async_t = sig
 end
 
 module Callback : sig
-  (* BsAsync type. Strict arity is enforced here. *)
+  (* callback type. Strict arity is enforced here. *)
   type error  = exn Js.Nullable.t
   type 'a callback = error -> 'a -> unit [@bs]
 
