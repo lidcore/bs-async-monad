@@ -2,21 +2,21 @@
 'use strict';
 
 var Fs = require("fs");
-var BsAsync = require("../src/bsAsync.js");
+var BsAsyncMonad = require("../src/bsAsyncMonad.js");
 
 function unlink(path, cb) {
   Fs.unlink(path, (function (exn) {
           if (exn == null) {
-            return BsAsync.Callback[/* return */2](/* () */0, cb);
+            return BsAsyncMonad.Callback[/* return */0](/* () */0, cb);
           } else {
-            return BsAsync.Callback[/* fail */3](exn, cb);
+            return BsAsyncMonad.Callback[/* fail */1](exn, cb);
           }
         }));
   return /* () */0;
 }
 
 function unlink_if_fopen(path) {
-  return BsAsync.Callback[/* >> */5]((function (param) {
+  return BsAsyncMonad.Callback[/* >> */4]((function (param) {
                 Fs.open(path, param);
                 return /* () */0;
               }), (function () {

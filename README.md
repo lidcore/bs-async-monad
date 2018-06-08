@@ -1,4 +1,4 @@
-# bs-async
+# bs-async-monad
 
 This module provides a Monadic API for callback computations in BuckleScript applications, as described in [this article](https://medium.com/@romain.beauxis/scalable-and-serverless-media-processing-using-bucklescript-ocaml-and-aws-lambda-api-gateway-4efe39331f33).
 
@@ -7,7 +7,7 @@ It provides a unified API for dealing with both callback-based asychronous compu
 ## Installation
 
 ```
-npm install [--save] bs-async
+npm install [--save] bs-async-monad
 ```
 
 Then add it to your `bsconfig.json`:
@@ -15,7 +15,7 @@ Then add it to your `bsconfig.json`:
 ```
   ...
   "bs-dependencies" : [
-    "bs-async",
+    "bs-async-monad",
     ...
     ],
   ...
@@ -26,7 +26,7 @@ Then add it to your `bsconfig.json`:
 Monadic computations are handy to write code that handles asynchronous errors and results in a composable 
 fashion without having to repeat the same patterns again. For instance, from the `examples/` section:
 ```
-open BsAsync.Callback
+open BsAsyncMonad.Callback
 
 module Fs : sig
   type fd

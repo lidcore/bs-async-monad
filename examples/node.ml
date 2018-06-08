@@ -1,11 +1,11 @@
-open BsAsync.Callback
+open BsAsyncMonad.Callback
 
 module Fs = struct
   type fd
-  (* BsAsync with the right arity: *)
+  (* BsAsyncMonad with the right arity: *)
   external fopen : string -> fd callback -> unit = "open" [@@bs.module "fs"]
 
-  (* BsAsync with different arity: *)
+  (* BsAsyncMonad with different arity: *)
   external unlink : string -> (exn Js.Nullable.t -> unit [@bs]) -> unit = "" [@@bs.module "fs"]
 
   let unlink path cb =

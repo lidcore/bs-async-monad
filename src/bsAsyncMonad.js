@@ -15,7 +15,7 @@ function fail(exn, cb) {
   return cb(exn, null);
 }
 
-var $$Error = Caml_exceptions.create("BsAsync.Callback.Error");
+var $$Error = Caml_exceptions.create("BsAsyncMonad.Callback.Error");
 
 function compose($staropt$star, current, next, cb) {
   var noStack = $staropt$star ? $staropt$star[0] : false;

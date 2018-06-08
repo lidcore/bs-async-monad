@@ -1,5 +1,5 @@
 {
-  "name": "bs-async",
+  "name": "bs-async-monad",
   "sources": [
     "src",
     {
