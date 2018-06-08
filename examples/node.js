@@ -2,21 +2,21 @@
 'use strict';
 
 var Fs = require("fs");
-var BsCallback = require("../src/bsCallback.js");
+var BsAsync = require("../src/bsAsync.js");
 
 function unlink(path, cb) {
   Fs.unlink(path, (function (exn) {
           if (exn == null) {
-            return BsCallback.$$return(/* () */0, cb);
+            return BsAsync.Callback[/* return */2](/* () */0, cb);
           } else {
-            return BsCallback.fail(exn, cb);
+            return BsAsync.Callback[/* fail */3](exn, cb);
           }
         }));
   return /* () */0;
 }
 
 function unlink_if_fopen(path) {
-  return BsCallback.$great$great((function (param) {
+  return BsAsync.Callback[/* >> */5]((function (param) {
                 Fs.open(path, param);
                 return /* () */0;
               }), (function () {

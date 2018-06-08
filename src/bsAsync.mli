@@ -1,52 +1,4 @@
-# bs-async
-
-This module provides a Monadic API for callback computations in BuckleScript applications, as described in [this article](https://medium.com/@romain.beauxis/scalable-and-serverless-media-processing-using-bucklescript-ocaml-and-aws-lambda-api-gateway-4efe39331f33).
-
-It provides a unified API for dealing with both callback-based asychronous computations as well as promises. Whenever possible, the code is optimized for javascript.
-
-## Installation
-
-```
-npm install [--save] bs-async
-```
-
-Then add it to your `bsconfig.json`:
-
-```
-  ...
-  "bs-dependencies" : [
-    "bs-async",
-    ...
-    ],
-  ...
-```
-
-## Rationale
-
-Monadic computations are handy to write code that handles asynchronous errors and results in a composable 
-fashion without having to repeat the same patterns again. For instance, from the `examples/` section:
-```
-open BsAsync.Callback
-
-module Fs : sig
-  type fd
-  val fopen  : string -> fd t
-  val unlink : string -> unit t
-end
-
-(* Pipe two asynchronous computations: *)
-let unlink_if_fopen path =
-  (Fs.fopen path) >> fun _ ->
-    Fs.unlink path
-```
-
-Here, errors raised during the first call are immediately passed to the final callback without 
-having to repeatedly write that pattern over and over.
-
-This is similar to the `Promise` API but with less overhead and a focus on composability.
-
-The API is as follows:
-```
+module type Async_t = sig
   (* Generic type for a computation. *)
   type 'a t
 
@@ -91,7 +43,7 @@ The API is as follows:
 
   (* Fold over a list or array of elements. Tail-recursive.
    * Result order will be shuffled when using concurrency > 1. *)
-  val fold_lefta : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b array -> 'a t
+  val fold_lefta : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b array -> 'a t 
   val fold_left  : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
   val fold_lefti : ?concurrency:int -> ('a -> int -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
 
@@ -116,4 +68,24 @@ The API is as follows:
    * Default [exceptionHandler] raises any received exception. *)
   val execute : ?exceptionHandler:(exn->unit) -> 'a t -> ('a -> unit) -> unit
   val finish  : ?exceptionHandler:(exn->unit) -> unit t -> unit
-```
+end
+
+module Callback : sig
+  (* BsAsync type. Strict arity is enforced here. *)
+  type error  = exn Js.Nullable.t
+  type 'a callback = error -> 'a -> unit [@bs]
+
+  (* A asynchronous computation takes a callback and executes it when it
+     has finished, either with an error or with a result of type 'a. *)
+  type 'a t = 'a callback -> unit
+
+  (* Interface with Promise API. *)
+  val from_promise : 'a Js.Promise.t -> 'a t
+  val to_promise   : 'a t -> 'a Js.Promise.t
+
+  include Async_t with type 'a t := 'a t
+end
+
+module Promise : sig
+  include Async_t with type 'a t = 'a Js.Promise.t
+end

@@ -1,5 +1,5 @@
 {
-  "name": "bs-callback",
+  "name": "bs-async",
   "sources": [
     "src",
     {

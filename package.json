@@ -1,7 +1,7 @@
 {
-  "name": "bs-callback",
-  "version": "1.4.1",
-  "description": "BsCallback monad for bucklescript applications",
+  "name": "bs-async",
+  "version": "1.0.0",
+  "description": "BsAsync monad for bucklescript applications",
   "main": "lib/js/src/callback.js",
   "scripts": {
     "build": "bsb -make-world",
@@ -10,10 +10,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lidcore/bs-callback.git"
+    "url": "git+https://github.com/lidcore/bs-async.git"
   },
   "bugs": {
-    "url": "https://github.com/lidcore/bs-callback/issues"
+    "url": "https://github.com/lidcore/bs-async/issues"
   },
   "keywords": [
     "bucklescript",
@@ -30,7 +30,7 @@
   "author": "Lidcore IT <it@lidcore.com>",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/lidcore/bs-callback/issues"
+    "url": "https://github.com/lidcore/bs-async/issues"
   },
-  "homepage": "https://github.com/lidcore/bs-callback"
+  "homepage": "https://github.com/lidcore/bs-async"
 }
