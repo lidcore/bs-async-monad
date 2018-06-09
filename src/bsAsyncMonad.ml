@@ -247,41 +247,176 @@ module Callback = struct
 
   let finish ?exceptionHandler t =
     execute ?exceptionHandler t (fun _ -> ())
+ end
 
-  let from_promise p = fun cb ->
-    let on_success ret =
-      return ret cb;
-      Js.Promise.resolve ret
-    in
-    (* There's an inherent conflict here between dynamically typed JS world
-     * and statically typed BS/OCaml world. The promise API says that the
-     * value returned by the onError handler determines the value or error
-     * with which the promise gets resolved.
-     * In JS world, that means that you can just do console.log and the promise
-     * gets resolved with null/unit whatever.
-     * But in statically typed world the promise is of type 'a and needs a
-     * type 'a to resolve and since this code is generic, we have no idea how
-     * to produce a value of type 'a. Also, if we return the original promise,
-     * the runtime thinks that we're not handling errors and complains about it.
-     * Thus: Obj.magic. 😳 *)
-    let on_error err =
-      fail (Obj.magic err) cb;
-      Js.Promise.reject (Obj.magic err)
-    in
-    ignore(Js.Promise.then_ on_success p |> Js.Promise.catch on_error)
+let from_promise p = fun cb ->
+  let on_success ret =
+    Callback.return ret cb;
+    Js.Promise.resolve ret
+  in
+  (* There's an inherent conflict here between dynamically typed JS world
+   * and statically typed BS/OCaml world. The promise API says that the
+   * value returned by the onError handler determines the value or error
+   * with which the promise gets resolved.
+   * In JS world, that means that you can just do console.log and the promise
+   * gets resolved with null/unit whatever.
+   * But in statically typed world the promise is of type 'a and needs a
+   * type 'a to resolve and since this code is generic, we have no idea how
+   * to produce a value of type 'a. Also, if we return the original promise,
+   * the runtime thinks that we're not handling errors and complains about it.
+   * Thus: Obj.magic. 😳 *)
+  let on_error err =
+    Callback.fail (Obj.magic err) cb;
+    Js.Promise.reject (Obj.magic err)
+  in
+  ignore(Js.Promise.then_ on_success p |> Js.Promise.catch on_error)
 
-  let to_promise fn =
-    Js.Promise.make (fun ~resolve ~reject ->
-      fn (fun [@bs] err ret ->
-        match Js.toOption err with
-          | Some exn -> reject exn [@bs]
-          | None -> resolve ret [@bs]))
+let to_promise fn =
+  Js.Promise.make (fun ~resolve ~reject ->
+    fn (fun [@bs] err ret ->
+      match Js.toOption err with
+        | Some exn -> reject exn [@bs]
+        | None -> resolve ret [@bs]))
+
+module type Wrapper_t = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val fail   : exn -> 'a t
+  val to_callback   : 'a t -> 'a Callback.t
+  val from_callback : 'a Callback.t -> 'a t
 end
 
-module Promise = struct
+module Make(Wrapper:Wrapper_t) = struct
+  type 'a t = 'a Wrapper.t
+  let return = Wrapper.return
+  let fail = Wrapper.fail
+  let compose ?noStack p fn =
+    let c =
+      Wrapper.to_callback p
+    in
+    let fn v =
+      Wrapper.to_callback (fn v)
+    in
+    Wrapper.from_callback
+      (Callback.compose ?noStack c fn)
+  let (>>) = fun p fn -> compose p fn
+  let catch ?noStack p fn =
+    let c =
+      Wrapper.to_callback p
+    in
+    let fn v =
+      Wrapper.to_callback (fn v)
+    in
+    Wrapper.from_callback
+      (Callback.catch ?noStack c fn)
+  let (||>) = fun p fn -> catch p fn
+  let pipe ?noStack p fn =
+    let c =
+      Wrapper.to_callback p
+    in
+    Wrapper.from_callback
+      (Callback.pipe ?noStack c fn)
+  let (>|) = fun p fn -> pipe p fn
+  let ensure ?noStack p fn =
+    let c =
+      Wrapper.to_callback p
+    in
+    let c =
+      Callback.ensure ?noStack c (fun () ->
+        Wrapper.to_callback (fn ()))
+    in
+    Wrapper.from_callback c
+  let (&>) = fun p fn ->
+    ensure p fn
+  let discard p =
+    p >> (fun _ -> return ())
+  let repeat cond body =
+    let cond () =
+      Wrapper.to_callback (cond ())
+    in
+    let body () =
+      Wrapper.to_callback (body ())
+    in
+    let c =
+      Callback.repeat cond body
+    in
+    Wrapper.from_callback c
+  let fold_lefta ?concurrency fn p a =
+    let fn x y =
+      Wrapper.to_callback (fn x y)
+    in
+    let c =
+      Wrapper.to_callback p
+    in
+    Wrapper.from_callback
+      (Callback.fold_lefta ?concurrency fn c a)
+  let fold_left ?concurrency fn p l =
+    fold_lefta ?concurrency fn p (Array.of_list l)
+  let fold_lefti ?concurrency fn p l =
+    let fn x pos y =
+      Wrapper.to_callback (fn x pos y)
+    in
+    let c =
+      Wrapper.to_callback p
+    in
+    Wrapper.from_callback
+      (Callback.fold_lefti ?concurrency fn c l)
+  let itera ?concurrency fn a =
+    let fn x =
+      Wrapper.to_callback (fn x)
+    in
+    Wrapper.from_callback
+      (Callback.itera ?concurrency fn a)
+  let iter ?concurrency fn l =
+    itera ?concurrency fn (Array.of_list l)
+  let iteri ?concurrency fn l =
+    let fn pos x =
+      Wrapper.to_callback (fn pos x)
+    in
+    Wrapper.from_callback
+      (Callback.iteri ?concurrency fn l)
+  let mapa ?concurrency fn a =
+    let fn x =
+      Wrapper.to_callback (fn x)
+    in
+    Wrapper.from_callback
+      (Callback.mapa ?concurrency fn a)
+  let map ?concurrency fn l =
+    mapa ?concurrency fn (Array.of_list l) >> fun a ->
+      return (Array.to_list a)
+  let mapi ?concurrency fn l =
+    let fn pos x =
+      Wrapper.to_callback (fn pos x)
+    in
+    Wrapper.from_callback
+      (Callback.mapi ?concurrency fn l)
+  let seqa ?concurrency a =
+    let a =
+      Array.map Wrapper.to_callback a
+    in
+    Wrapper.from_callback
+      (Callback.seqa ?concurrency a)
+  let seq ?concurrency l =
+    seqa ?concurrency (Array.of_list l)
+  let execute ?exceptionHandler p cb =
+    Callback.execute ?exceptionHandler
+      (Wrapper.to_callback p) cb
+  let finish ?exceptionHandler p =
+    execute ?exceptionHandler p (fun () -> ())
+end
+
+module PromiseWrapper = struct
   type 'a t = 'a Js.Promise.t
   let return = Js.Promise.resolve
   let fail = Js.Promise.reject
+  let to_callback = from_promise
+  let from_callback = to_promise
+end
+
+module Promise = struct
+  include Make(PromiseWrapper)
+
+  (* Use native functions when available. *)
   let compose ?noStack:_ p fn =
     Js.Promise.then_ fn p
   let (>>) = fun p fn ->
@@ -296,90 +431,10 @@ module Promise = struct
       return (fn v))
   let (>|) = fun p fn ->
     pipe p fn
+
+  (* Default to noStack:true for ensure for consistency: *)
   let ensure ?noStack:_ p fn =
-    let c =
-      Callback.from_promise p
-    in
-    let c =
-      Callback.ensure ~noStack:true c (fun () ->
-        Callback.from_promise (fn ()))
-    in
-    Callback.to_promise c
-  let (&>) = fun p fn ->
+    ensure ~noStack:true p fn
+  let (&>) p fn =
     ensure p fn
-  let discard p =
-    p >> (fun _ -> return ())
-  let repeat cond body =
-    let cond () =
-      Callback.from_promise (cond ())
-    in
-    let body () =
-      Callback.from_promise (body ())
-    in
-    let c =
-      Callback.repeat cond body
-    in
-    Callback.to_promise c
-  let fold_lefta ?concurrency fn p a =
-    let fn x y =
-      Callback.from_promise (fn x y)
-    in
-    let c =
-      Callback.from_promise p
-    in
-    Callback.to_promise
-      (Callback.fold_lefta ?concurrency fn c a)
-  let fold_left ?concurrency fn p l =
-    fold_lefta ?concurrency fn p (Array.of_list l)
-  let fold_lefti ?concurrency fn p l =
-    let fn x pos y =
-      Callback.from_promise (fn x pos y)
-    in
-    let c =
-      Callback.from_promise p
-    in
-    Callback.to_promise
-      (Callback.fold_lefti ?concurrency fn c l)
-  let itera ?concurrency fn a =
-    let fn x =
-      Callback.from_promise (fn x)
-    in
-    Callback.to_promise
-      (Callback.itera ?concurrency fn a)
-  let iter ?concurrency fn l =
-    itera ?concurrency fn (Array.of_list l)
-  let iteri ?concurrency fn l =
-    let fn pos x =
-      Callback.from_promise (fn pos x)
-    in
-    Callback.to_promise
-      (Callback.iteri ?concurrency fn l)
-  let mapa ?concurrency fn a =
-    let fn x =
-      Callback.from_promise (fn x)
-    in
-    Callback.to_promise
-      (Callback.mapa ?concurrency fn a)
-  let map ?concurrency fn l =
-    mapa ?concurrency fn (Array.of_list l) >> fun a ->
-      return (Array.to_list a)
-  let mapi ?concurrency fn l =
-    let fn pos x =
-      Callback.from_promise (fn pos x)
-    in
-    Callback.to_promise
-      (Callback.mapi ?concurrency fn l)
-  let seqa ?concurrency a =
-    let a =
-      Array.map Callback.from_promise a
-    in
-    Callback.to_promise
-      (Callback.seqa ?concurrency a)
-  let seq ?concurrency l =
-    seqa ?concurrency (Array.of_list l)
-  let execute ?exceptionHandler p cb =
-    Callback.execute ?exceptionHandler
-      (Callback.from_promise p) cb
-  let finish ?exceptionHandler p =
-    execute ?exceptionHandler p (fun () -> ())
 end

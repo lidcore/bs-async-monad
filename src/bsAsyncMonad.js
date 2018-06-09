@@ -393,6 +393,164 @@ function to_promise(fn) {
               }));
 }
 
+function Make(Wrapper) {
+  var $$return = Wrapper[/* return */0];
+  var fail = Wrapper[/* fail */1];
+  var compose$1 = function (noStack, p, fn) {
+    var c = Curry._1(Wrapper[/* to_callback */2], p);
+    var fn$1 = function (v) {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(fn, v));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return compose(noStack, c, fn$1, param);
+                }));
+  };
+  var $great$great = function (p, fn) {
+    return compose$1(/* None */0, p, fn);
+  };
+  var $$catch$1 = function (noStack, p, fn) {
+    var c = Curry._1(Wrapper[/* to_callback */2], p);
+    var fn$1 = function (v) {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(fn, v));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return $$catch(noStack, c, fn$1, param);
+                }));
+  };
+  var $pipe$pipe$great = function (p, fn) {
+    return $$catch$1(/* None */0, p, fn);
+  };
+  var pipe$1 = function (noStack, p, fn) {
+    var c = Curry._1(Wrapper[/* to_callback */2], p);
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return pipe(noStack, c, fn, param);
+                }));
+  };
+  var $great$pipe = function (p, fn) {
+    return pipe$1(/* None */0, p, fn);
+  };
+  var ensure$1 = function (noStack, p, fn) {
+    var c = Curry._1(Wrapper[/* to_callback */2], p);
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return ensure(noStack, c, (function () {
+                                return Curry._1(Wrapper[/* to_callback */2], Curry._1(fn, /* () */0));
+                              }), param);
+                }));
+  };
+  var $unknown$great = function (p, fn) {
+    return ensure$1(/* None */0, p, fn);
+  };
+  var discard = function (p) {
+    return compose$1(/* None */0, p, (function () {
+                  return Curry._1($$return, /* () */0);
+                }));
+  };
+  var repeat$1 = function (cond, body) {
+    var cond$1 = function () {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(cond, /* () */0));
+    };
+    var body$1 = function () {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(body, /* () */0));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return repeat(cond$1, body$1, param);
+                }));
+  };
+  var fold_lefta$1 = function (concurrency, fn, p, a) {
+    var fn$1 = function (x, y) {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._2(fn, x, y));
+    };
+    var c = Curry._1(Wrapper[/* to_callback */2], p);
+    return Curry._1(Wrapper[/* from_callback */3], fold_lefta(concurrency, fn$1, c, a));
+  };
+  var fold_left = function (concurrency, fn, p, l) {
+    return fold_lefta$1(concurrency, fn, p, $$Array.of_list(l));
+  };
+  var fold_lefti$1 = function (concurrency, fn, p, l) {
+    var fn$1 = function (x, pos, y) {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._3(fn, x, pos, y));
+    };
+    var c = Curry._1(Wrapper[/* to_callback */2], p);
+    return Curry._1(Wrapper[/* from_callback */3], fold_lefti(concurrency, fn$1, c, l));
+  };
+  var itera$1 = function (concurrency, fn, a) {
+    var fn$1 = function (x) {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(fn, x));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return itera(concurrency, fn$1, a, param);
+                }));
+  };
+  var iter = function (concurrency, fn, l) {
+    return itera$1(concurrency, fn, $$Array.of_list(l));
+  };
+  var iteri$1 = function (concurrency, fn, l) {
+    var fn$1 = function (pos, x) {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._2(fn, pos, x));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], iteri(concurrency, fn$1, l));
+  };
+  var mapa$1 = function (concurrency, fn, a) {
+    var fn$1 = function (x) {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(fn, x));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], mapa(concurrency, fn$1, a));
+  };
+  var map = function (concurrency, fn, l) {
+    return compose$1(/* None */0, mapa$1(concurrency, fn, $$Array.of_list(l)), (function (a) {
+                  return Curry._1($$return, $$Array.to_list(a));
+                }));
+  };
+  var mapi$1 = function (concurrency, fn, l) {
+    var fn$1 = function (pos, x) {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._2(fn, pos, x));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], mapi(concurrency, fn$1, l));
+  };
+  var seqa$1 = function (concurrency, a) {
+    var a$1 = $$Array.map(Wrapper[/* to_callback */2], a);
+    return Curry._1(Wrapper[/* from_callback */3], seqa(concurrency, a$1));
+  };
+  var seq = function (concurrency, l) {
+    return seqa$1(concurrency, $$Array.of_list(l));
+  };
+  var execute$1 = function (exceptionHandler, p, cb) {
+    return execute(exceptionHandler, Curry._1(Wrapper[/* to_callback */2], p), cb);
+  };
+  var finish = function (exceptionHandler, p) {
+    return execute$1(exceptionHandler, p, (function () {
+                  return /* () */0;
+                }));
+  };
+  return /* module */[
+          /* return */$$return,
+          /* fail */fail,
+          /* compose */compose$1,
+          /* >> */$great$great,
+          /* catch */$$catch$1,
+          /* ||> */$pipe$pipe$great,
+          /* pipe */pipe$1,
+          /* >| */$great$pipe,
+          /* ensure */ensure$1,
+          /* &> */$unknown$great,
+          /* discard */discard,
+          /* repeat */repeat$1,
+          /* fold_lefta */fold_lefta$1,
+          /* fold_left */fold_left,
+          /* fold_lefti */fold_lefti$1,
+          /* itera */itera$1,
+          /* iter */iter,
+          /* iteri */iteri$1,
+          /* mapa */mapa$1,
+          /* map */map,
+          /* mapi */mapi$1,
+          /* seqa */seqa$1,
+          /* seq */seq,
+          /* execute */execute$1,
+          /* finish */finish
+        ];
+}
+
 function $$return$1(prim) {
   return Promise.resolve(prim);
 }
@@ -401,39 +559,27 @@ function fail$1(prim) {
   return Promise.reject(prim);
 }
 
-function compose$1(_, p, fn) {
-  return p.then(Curry.__1(fn));
-}
-
-function $great$great$1(p, fn) {
-  return p.then(Curry.__1(fn));
-}
-
-function $$catch$1(_, p, fn) {
-  return p.catch(Curry.__1(fn));
-}
-
-function $pipe$pipe$great$1(p, fn) {
-  return $$catch$1(/* None */0, p, fn);
-}
-
-function pipe$1(_, p, fn) {
-  return p.then((function (v) {
-                return Promise.resolve(Curry._1(fn, v));
-              }));
-}
-
-function $great$pipe$1(p, fn) {
-  return pipe$1(/* None */0, p, fn);
-}
-
-function ensure$1(_, p, fn) {
+function compose$1(noStack, p, fn) {
   var c = function (param) {
     return from_promise(p, param);
   };
-  var partial_arg = /* Some */[true];
+  var fn$1 = function (v) {
+    var partial_arg = Curry._1(fn, v);
+    return (function (param) {
+        return from_promise(partial_arg, param);
+      });
+  };
   return to_promise((function (param) {
-                return ensure(partial_arg, c, (function () {
+                return compose(noStack, c, fn$1, param);
+              }));
+}
+
+function ensure$1(noStack, p, fn) {
+  var c = function (param) {
+    return from_promise(p, param);
+  };
+  return to_promise((function (param) {
+                return ensure(noStack, c, (function () {
                               var partial_arg = Curry._1(fn, /* () */0);
                               return (function (param) {
                                   return from_promise(partial_arg, param);
@@ -442,12 +588,8 @@ function ensure$1(_, p, fn) {
               }));
 }
 
-function $unknown$great$1(p, fn) {
-  return ensure$1(/* None */0, p, fn);
-}
-
 function discard$1(p) {
-  return p.then((function () {
+  return compose$1(/* None */0, p, (function () {
                 return Promise.resolve(/* () */0);
               }));
 }
@@ -537,8 +679,7 @@ function mapa$1(concurrency, fn, a) {
 }
 
 function map$1(concurrency, fn, l) {
-  var p = mapa$1(concurrency, fn, $$Array.of_list(l));
-  return p.then((function (a) {
+  return compose$1(/* None */0, mapa$1(concurrency, fn, $$Array.of_list(l)), (function (a) {
                 return Promise.resolve($$Array.to_list(a));
               }));
 }
@@ -574,37 +715,41 @@ function finish$1(exceptionHandler, p) {
               }));
 }
 
-var Promise$1 = /* module */[
-  /* return */$$return$1,
-  /* fail */fail$1,
-  /* compose */compose$1,
-  /* >> */$great$great$1,
-  /* catch */$$catch$1,
-  /* ||> */$pipe$pipe$great$1,
-  /* pipe */pipe$1,
-  /* >| */$great$pipe$1,
-  /* ensure */ensure$1,
-  /* &> */$unknown$great$1,
-  /* discard */discard$1,
-  /* repeat */repeat$1,
-  /* fold_lefta */fold_lefta$1,
-  /* fold_left */fold_left$1,
-  /* fold_lefti */fold_lefti$1,
-  /* itera */itera$1,
-  /* iter */iter$1,
-  /* iteri */iteri$1,
-  /* mapa */mapa$1,
-  /* map */map$1,
-  /* mapi */mapi$1,
-  /* seqa */seqa$1,
-  /* seq */seq$1,
-  /* execute */execute$1,
-  /* finish */finish$1
-];
+function compose$2(_, p, fn) {
+  return p.then(Curry.__1(fn));
+}
+
+function $great$great$1(p, fn) {
+  return p.then(Curry.__1(fn));
+}
+
+function $$catch$1(_, p, fn) {
+  return p.catch(Curry.__1(fn));
+}
+
+function $pipe$pipe$great$1(p, fn) {
+  return $$catch$1(/* None */0, p, fn);
+}
+
+function pipe$1(_, p, fn) {
+  return p.then((function (v) {
+                return Promise.resolve(Curry._1(fn, v));
+              }));
+}
+
+function $great$pipe$1(p, fn) {
+  return pipe$1(/* None */0, p, fn);
+}
+
+function ensure$2(_, p, fn) {
+  return ensure$1(/* Some */[true], p, fn);
+}
+
+function $unknown$great$1(p, fn) {
+  return ensure$1(/* Some */[true], p, fn);
+}
 
 var Callback = [
-  from_promise,
-  to_promise,
   $$return,
   fail,
   compose,
@@ -632,6 +777,37 @@ var Callback = [
   finish
 ];
 
+var Promise$1 = [
+  $$return$1,
+  fail$1,
+  compose$2,
+  $great$great$1,
+  $$catch$1,
+  $pipe$pipe$great$1,
+  pipe$1,
+  $great$pipe$1,
+  ensure$2,
+  $unknown$great$1,
+  discard$1,
+  repeat$1,
+  fold_lefta$1,
+  fold_left$1,
+  fold_lefti$1,
+  itera$1,
+  iter$1,
+  iteri$1,
+  mapa$1,
+  map$1,
+  mapi$1,
+  seqa$1,
+  seq$1,
+  execute$1,
+  finish$1
+];
+
 exports.Callback = Callback;
+exports.Make = Make;
+exports.from_promise = from_promise;
+exports.to_promise = to_promise;
 exports.Promise = Promise$1;
 /* No side effect */

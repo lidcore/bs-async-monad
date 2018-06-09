@@ -79,13 +79,21 @@ module Callback : sig
      has finished, either with an error or with a result of type 'a. *)
   type 'a t = 'a callback -> unit
 
-  (* Interface with Promise API. *)
-  val from_promise : 'a Js.Promise.t -> 'a t
-  val to_promise   : 'a t -> 'a Js.Promise.t
-
   include Async_t with type 'a t := 'a t
 end
 
-module Promise : sig
-  include Async_t with type 'a t = 'a Js.Promise.t
+module type Wrapper_t = sig
+  type 'a t
+  val return : 'a -> 'a t
+  val fail   : exn -> 'a t
+  val to_callback   : 'a t -> 'a Callback.t
+  val from_callback : 'a Callback.t -> 'a t
 end
+
+module Make(Wrapper:Wrapper_t) : Async_t with type 'a t = 'a Wrapper.t
+
+(* Interface with Promise API. *)
+val from_promise : 'a Js.Promise.t -> 'a Callback.t
+val to_promise   : 'a Callback.t -> 'a Js.Promise.t
+
+module Promise : Async_t with type 'a t = 'a Js.Promise.t

@@ -16,7 +16,7 @@ function unlink(path, cb) {
 }
 
 function unlink_if_fopen(path) {
-  return BsAsyncMonad.Callback[/* >> */4]((function (param) {
+  return BsAsyncMonad.Callback[/* >> */3]((function (param) {
                 Fs.open(path, param);
                 return /* () */0;
               }), (function () {
