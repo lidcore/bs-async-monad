@@ -85,7 +85,13 @@ The API is as follows:
   val repeat : (unit -> bool t) -> (unit -> unit t) -> unit t
 
   (* Same as repeat but with negative condition. *)
-  val unless : (unit -> bool t) -> (unit -> unit t) -> unit t
+  val repeat_unless : (unit -> bool t) -> (unit -> unit t) -> unit t
+
+  (* Execute a computation conditionaly. *)
+  val async_if : bool t -> (unit -> unit t) -> unit t
+
+  (* Same as async_if but with negative condition. *)
+  val async_unless : bool t -> (unit -> unit t) -> unit t
 
   (* In the following [concurrency] refers to the number
    * of concurrent executions. It is meant as in the node

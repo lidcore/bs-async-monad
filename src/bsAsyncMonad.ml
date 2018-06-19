@@ -12,7 +12,9 @@ module type Async_t = sig
   val (&>)   : 'a t -> (unit -> unit t) -> 'a t
   val discard : 'a t -> unit t
   val repeat : (unit -> bool t) -> (unit -> unit t) -> unit t
-  val unless : (unit -> bool t) -> (unit -> unit t) -> unit t
+  val repeat_unless : (unit -> bool t) -> (unit -> unit t) -> unit t
+  val async_if : bool t -> (unit -> unit t) -> unit t
+  val async_unless : bool t -> (unit -> unit t) -> unit t
   val fold_lefta : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b array -> 'a t
   val fold_left  : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
   val fold_lefti : ?concurrency:int -> ('a -> int -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
@@ -145,12 +147,26 @@ module Callback = struct
     setTimeout (fun [@bs] () ->
       exec ()) 0.
 
-  let unless condition computation =
+  let repeat_unless condition computation =
     let condition () cb =
       condition () (fun [@bs] err ret ->
         cb err (not ret) [@bs])
     in
     repeat condition computation
+
+  let async_if cond computation cb =
+    cond (fun [@bs] err ret ->
+      match Js.Nullable.test err, ret with
+        | true, _
+        | _, false -> cb err () [@bs]
+        | _ -> computation () cb)
+
+  let async_unless cond computation cb =
+    let cond cb =
+      cond (fun [@bs] err ret ->
+        cb err (not ret) [@bs])
+    in
+    async_if cond computation cb
 
   let itera ?(concurrency=1) fn a cb =
     let total = Array.length a in
@@ -349,7 +365,7 @@ module Make(Wrapper:Wrapper_t) = struct
       Callback.repeat cond body
     in
     Wrapper.from_callback c
-  let unless cond body =
+  let repeat_unless cond body =
     let cond () =
       Wrapper.to_callback (cond ())
     in
@@ -357,7 +373,29 @@ module Make(Wrapper:Wrapper_t) = struct
       Wrapper.to_callback (body ())
     in
     let c =
-      Callback.unless cond body
+      Callback.repeat_unless cond body
+    in
+    Wrapper.from_callback c
+  let async_if cond computation =
+    let cond =
+      Wrapper.to_callback cond
+    in
+    let computation () =
+      Wrapper.to_callback (computation ())
+    in
+    let c =
+      Callback.async_if cond computation
+    in
+    Wrapper.from_callback c
+  let async_unless cond computation =
+    let cond =
+      Wrapper.to_callback cond
+    in
+    let computation () =
+      Wrapper.to_callback (computation ())
+    in
+    let c =
+      Callback.async_unless cond computation
     in
     Wrapper.from_callback c
   let fold_lefta ?concurrency fn p a =

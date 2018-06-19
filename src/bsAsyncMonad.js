@@ -184,7 +184,7 @@ function repeat(condition, computation, cb) {
   return /* () */0;
 }
 
-function unless(condition, computation) {
+function repeat_unless(condition, computation) {
   var condition$1 = function (_, cb) {
     return Curry._2(condition, /* () */0, (function (err, ret) {
                   return cb(err, !ret);
@@ -193,6 +193,26 @@ function unless(condition, computation) {
   return (function (param) {
       return repeat(condition$1, computation, param);
     });
+}
+
+function async_if(cond, computation, cb) {
+  return Curry._1(cond, (function (err, ret) {
+                var match = (err == null);
+                if (match || !ret) {
+                  return cb(err, /* () */0);
+                } else {
+                  return Curry._2(computation, /* () */0, cb);
+                }
+              }));
+}
+
+function async_unless(cond, computation, cb) {
+  var cond$1 = function (cb) {
+    return Curry._1(cond, (function (err, ret) {
+                  return cb(err, !ret);
+                }));
+  };
+  return async_if(cond$1, computation, cb);
 }
 
 function itera($staropt$star, fn, a, cb) {
@@ -467,14 +487,32 @@ function Make(Wrapper) {
                   return repeat(cond$1, body$1, param);
                 }));
   };
-  var unless$1 = function (cond, body) {
+  var repeat_unless$1 = function (cond, body) {
     var cond$1 = function () {
       return Curry._1(Wrapper[/* to_callback */2], Curry._1(cond, /* () */0));
     };
     var body$1 = function () {
       return Curry._1(Wrapper[/* to_callback */2], Curry._1(body, /* () */0));
     };
-    return Curry._1(Wrapper[/* from_callback */3], unless(cond$1, body$1));
+    return Curry._1(Wrapper[/* from_callback */3], repeat_unless(cond$1, body$1));
+  };
+  var async_if$1 = function (cond, computation) {
+    var cond$1 = Curry._1(Wrapper[/* to_callback */2], cond);
+    var computation$1 = function () {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(computation, /* () */0));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return async_if(cond$1, computation$1, param);
+                }));
+  };
+  var async_unless$1 = function (cond, computation) {
+    var cond$1 = Curry._1(Wrapper[/* to_callback */2], cond);
+    var computation$1 = function () {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(computation, /* () */0));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return async_unless(cond$1, computation$1, param);
+                }));
   };
   var fold_lefta$1 = function (concurrency, fn, p, a) {
     var fn$1 = function (x, y) {
@@ -555,7 +593,9 @@ function Make(Wrapper) {
           /* &> */$unknown$great,
           /* discard */discard,
           /* repeat */repeat$1,
-          /* unless */unless$1,
+          /* repeat_unless */repeat_unless$1,
+          /* async_if */async_if$1,
+          /* async_unless */async_unless$1,
           /* fold_lefta */fold_lefta$1,
           /* fold_left */fold_left,
           /* fold_lefti */fold_lefti$1,
@@ -633,7 +673,7 @@ function repeat$1(cond, body) {
               }));
 }
 
-function unless$1(cond, body) {
+function repeat_unless$1(cond, body) {
   var cond$1 = function () {
     var partial_arg = Curry._1(cond, /* () */0);
     return (function (param) {
@@ -646,7 +686,37 @@ function unless$1(cond, body) {
         return from_promise(partial_arg, param);
       });
   };
-  return to_promise(unless(cond$1, body$1));
+  return to_promise(repeat_unless(cond$1, body$1));
+}
+
+function async_if$1(cond, computation) {
+  var cond$1 = function (param) {
+    return from_promise(cond, param);
+  };
+  var computation$1 = function () {
+    var partial_arg = Curry._1(computation, /* () */0);
+    return (function (param) {
+        return from_promise(partial_arg, param);
+      });
+  };
+  return to_promise((function (param) {
+                return async_if(cond$1, computation$1, param);
+              }));
+}
+
+function async_unless$1(cond, computation) {
+  var cond$1 = function (param) {
+    return from_promise(cond, param);
+  };
+  var computation$1 = function () {
+    var partial_arg = Curry._1(computation, /* () */0);
+    return (function (param) {
+        return from_promise(partial_arg, param);
+      });
+  };
+  return to_promise((function (param) {
+                return async_unless(cond$1, computation$1, param);
+              }));
 }
 
 function fold_lefta$1(concurrency, fn, p, a) {
@@ -799,7 +869,9 @@ var Callback = [
   $unknown$great,
   discard,
   repeat,
-  unless,
+  repeat_unless,
+  async_if,
+  async_unless,
   fold_lefta,
   fold_left,
   fold_lefti,
@@ -828,7 +900,9 @@ var Promise$1 = [
   $unknown$great$1,
   discard$1,
   repeat$1,
-  unless$1,
+  repeat_unless$1,
+  async_if$1,
+  async_unless$1,
   fold_lefta$1,
   fold_left$1,
   fold_lefti$1,
