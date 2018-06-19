@@ -12,6 +12,7 @@ module type Async_t = sig
   val (&>)   : 'a t -> (unit -> unit t) -> 'a t
   val discard : 'a t -> unit t
   val repeat : (unit -> bool t) -> (unit -> unit t) -> unit t
+  val unless : (unit -> bool t) -> (unit -> unit t) -> unit t
   val fold_lefta : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b array -> 'a t
   val fold_left  : ?concurrency:int -> ('a -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
   val fold_lefti : ?concurrency:int -> ('a -> int -> 'b -> 'a t) -> 'a t -> 'b list -> 'a t
@@ -143,6 +144,13 @@ module Callback = struct
     in
     setTimeout (fun [@bs] () ->
       exec ()) 0.
+
+  let unless condition computation =
+    let condition () cb =
+      condition () (fun [@bs] err ret ->
+        cb err (not ret) [@bs])
+    in
+    repeat condition computation
 
   let itera ?(concurrency=1) fn a cb =
     let total = Array.length a in
@@ -339,6 +347,17 @@ module Make(Wrapper:Wrapper_t) = struct
     in
     let c =
       Callback.repeat cond body
+    in
+    Wrapper.from_callback c
+  let unless cond body =
+    let cond () =
+      Wrapper.to_callback (cond ())
+    in
+    let body () =
+      Wrapper.to_callback (body ())
+    in
+    let c =
+      Callback.unless cond body
     in
     Wrapper.from_callback c
   let fold_lefta ?concurrency fn p a =

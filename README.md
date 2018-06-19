@@ -84,6 +84,9 @@ The API is as follows:
   (* Repeat a computation. Tail-recursive. *)
   val repeat : (unit -> bool t) -> (unit -> unit t) -> unit t
 
+  (* Same as repeat but with negative condition. *)
+  val unless : (unit -> bool t) -> (unit -> unit t) -> unit t
+
   (* In the following [concurrency] refers to the number
    * of concurrent executions. It is meant as in the node
    * model of concurrency, i.e. JS code is always non-concurrent

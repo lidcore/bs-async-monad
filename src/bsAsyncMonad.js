@@ -184,6 +184,17 @@ function repeat(condition, computation, cb) {
   return /* () */0;
 }
 
+function unless(condition, computation) {
+  var condition$1 = function (_, cb) {
+    return Curry._2(condition, /* () */0, (function (err, ret) {
+                  return cb(err, !ret);
+                }));
+  };
+  return (function (param) {
+      return repeat(condition$1, computation, param);
+    });
+}
+
 function itera($staropt$star, fn, a, cb) {
   var concurrency = $staropt$star ? $staropt$star[0] : 1;
   var total = a.length;
@@ -456,6 +467,15 @@ function Make(Wrapper) {
                   return repeat(cond$1, body$1, param);
                 }));
   };
+  var unless$1 = function (cond, body) {
+    var cond$1 = function () {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(cond, /* () */0));
+    };
+    var body$1 = function () {
+      return Curry._1(Wrapper[/* to_callback */2], Curry._1(body, /* () */0));
+    };
+    return Curry._1(Wrapper[/* from_callback */3], unless(cond$1, body$1));
+  };
   var fold_lefta$1 = function (concurrency, fn, p, a) {
     var fn$1 = function (x, y) {
       return Curry._1(Wrapper[/* to_callback */2], Curry._2(fn, x, y));
@@ -535,6 +555,7 @@ function Make(Wrapper) {
           /* &> */$unknown$great,
           /* discard */discard,
           /* repeat */repeat$1,
+          /* unless */unless$1,
           /* fold_lefta */fold_lefta$1,
           /* fold_left */fold_left,
           /* fold_lefti */fold_lefti$1,
@@ -610,6 +631,22 @@ function repeat$1(cond, body) {
   return to_promise((function (param) {
                 return repeat(cond$1, body$1, param);
               }));
+}
+
+function unless$1(cond, body) {
+  var cond$1 = function () {
+    var partial_arg = Curry._1(cond, /* () */0);
+    return (function (param) {
+        return from_promise(partial_arg, param);
+      });
+  };
+  var body$1 = function () {
+    var partial_arg = Curry._1(body, /* () */0);
+    return (function (param) {
+        return from_promise(partial_arg, param);
+      });
+  };
+  return to_promise(unless(cond$1, body$1));
 }
 
 function fold_lefta$1(concurrency, fn, p, a) {
@@ -762,6 +799,7 @@ var Callback = [
   $unknown$great,
   discard,
   repeat,
+  unless,
   fold_lefta,
   fold_left,
   fold_lefti,
@@ -790,6 +828,7 @@ var Promise$1 = [
   $unknown$great$1,
   discard$1,
   repeat$1,
+  unless$1,
   fold_lefta$1,
   fold_left$1,
   fold_lefti$1,
