@@ -157,7 +157,7 @@ module Callback = struct
   let async_if cond computation cb =
     cond (fun [@bs] err ret ->
       match Js.Nullable.test err, ret with
-        | true, _
+        | false, _
         | _, false -> cb err () [@bs]
         | _ -> computation () cb)
 

@@ -198,10 +198,10 @@ function repeat_unless(condition, computation) {
 function async_if(cond, computation, cb) {
   return Curry._1(cond, (function (err, ret) {
                 var match = (err == null);
-                if (match || !ret) {
-                  return cb(err, /* () */0);
-                } else {
+                if (match && ret) {
                   return Curry._2(computation, /* () */0, cb);
+                } else {
+                  return cb(err, /* () */0);
                 }
               }));
 }
