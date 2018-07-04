@@ -78,6 +78,11 @@ The API is as follows:
   val ensure : ?noStack:bool -> 'a t -> (unit -> unit t) -> 'a t
   val (&>)   : 'a t -> (unit -> unit t) -> 'a t
 
+  (* Execute a function regardless of success or failure.
+   * Errors raised by the function are discared. *)
+  val ensure_pipe : ?noStack:bool -> 'a t -> (unit -> unit) -> 'a t
+  val (|&>) : 'a t -> (unit -> unit) -> 'a t
+
   (* Discard a computation's result. *)
   val discard : 'a t -> unit t
 

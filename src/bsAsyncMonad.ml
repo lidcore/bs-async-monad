@@ -10,6 +10,8 @@ module type Async_t = sig
   val (>|) : 'a t -> ('a -> 'b) -> 'b t
   val ensure : ?noStack:bool -> 'a t -> (unit -> unit t) -> 'a t
   val (&>)   : 'a t -> (unit -> unit t) -> 'a t
+  val ensure_pipe : ?noStack:bool -> 'a t -> (unit -> unit) -> 'a t
+  val (|&>) : 'a t -> (unit -> unit) -> 'a t
   val discard : 'a t -> unit t
   val repeat : (unit -> bool t) -> (unit -> unit t) -> unit t
   val repeat_unless : (unit -> bool t) -> (unit -> unit t) -> unit t
@@ -126,6 +128,19 @@ module Callback = struct
 
   let (&>) = fun a b ->
     ensure a b
+
+  let ensure_pipe ?(noStack=false) current ensure cb =
+     current (fun [@bs] err ret ->
+      on_next ~noStack (fun [@bs] () ->
+       begin
+        try
+          ensure ()
+        with _ -> ()
+       end;
+       cb err ret [@bs]))
+
+  let (|&>) current ensure cb =
+    ensure_pipe current ensure cb
 
   let discard fn cb =
     fn (fun [@bs] err _ ->
@@ -352,6 +367,16 @@ module Make(Wrapper:Wrapper_t) = struct
     Wrapper.from_callback c
   let (&>) = fun p fn ->
     ensure p fn
+  let ensure_pipe ?noStack p fn =
+    let c =
+      Wrapper.to_callback p
+    in
+    let c =
+      Callback.ensure_pipe ?noStack c fn
+    in
+    Wrapper.from_callback c
+  let (|&>) = fun p fn ->
+    ensure_pipe p fn
   let discard p =
     p >> (fun _ -> return ())
   let repeat cond body =

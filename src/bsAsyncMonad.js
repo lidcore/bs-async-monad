@@ -152,6 +152,25 @@ function $unknown$great(a, b) {
     });
 }
 
+function ensure_pipe($staropt$star, current, ensure, cb) {
+  var noStack = $staropt$star ? $staropt$star[0] : false;
+  return Curry._1(current, (function (err, ret) {
+                return on_next(noStack, (function () {
+                              try {
+                                Curry._1(ensure, /* () */0);
+                              }
+                              catch (exn){
+                                
+                              }
+                              return cb(err, ret);
+                            }));
+              }));
+}
+
+function $pipe$unknown$great(current, ensure, cb) {
+  return ensure_pipe(/* None */0, current, ensure, cb);
+}
+
 function discard(fn, cb) {
   return Curry._1(fn, (function (err, _) {
                 return cb(err, /* () */0);
@@ -471,6 +490,15 @@ function Make(Wrapper) {
   var $unknown$great = function (p, fn) {
     return ensure$1(/* None */0, p, fn);
   };
+  var ensure_pipe$1 = function (noStack, p, fn) {
+    var c = Curry._1(Wrapper[/* to_callback */2], p);
+    return Curry._1(Wrapper[/* from_callback */3], (function (param) {
+                  return ensure_pipe(noStack, c, fn, param);
+                }));
+  };
+  var $pipe$unknown$great = function (p, fn) {
+    return ensure_pipe$1(/* None */0, p, fn);
+  };
   var discard = function (p) {
     return compose$1(/* None */0, p, (function () {
                   return Curry._1($$return, /* () */0);
@@ -591,6 +619,8 @@ function Make(Wrapper) {
           /* >| */$great$pipe,
           /* ensure */ensure$1,
           /* &> */$unknown$great,
+          /* ensure_pipe */ensure_pipe$1,
+          /* |&> */$pipe$unknown$great,
           /* discard */discard,
           /* repeat */repeat$1,
           /* repeat_unless */repeat_unless$1,
@@ -647,6 +677,19 @@ function ensure$1(noStack, p, fn) {
                                 });
                             }), param);
               }));
+}
+
+function ensure_pipe$1(noStack, p, fn) {
+  var c = function (param) {
+    return from_promise(p, param);
+  };
+  return to_promise((function (param) {
+                return ensure_pipe(noStack, c, fn, param);
+              }));
+}
+
+function $pipe$unknown$great$1(p, fn) {
+  return ensure_pipe$1(/* None */0, p, fn);
 }
 
 function discard$1(p) {
@@ -867,6 +910,8 @@ var Callback = [
   $great$pipe,
   ensure,
   $unknown$great,
+  ensure_pipe,
+  $pipe$unknown$great,
   discard,
   repeat,
   repeat_unless,
@@ -898,6 +943,8 @@ var Promise$1 = [
   $great$pipe$1,
   ensure$2,
   $unknown$great$1,
+  ensure_pipe$1,
+  $pipe$unknown$great$1,
   discard$1,
   repeat$1,
   repeat_unless$1,
