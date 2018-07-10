@@ -21,16 +21,10 @@
     "callback",
     "monad"
   ],
-  "peerDependencies": {
-    "bs-platform": "^3.0.0"
-  },
-  "devDependencies": {
-    "bs-platform": "^3.0.0"
-  },
   "author": "Lidcore IT <it@lidcore.com>",
   "license": "BSD-2-Clause",
-  "bugs": {
-    "url": "https://github.com/lidcore/bs-async-monad/issues"
-  },
-  "homepage": "https://github.com/lidcore/bs-async-monad"
+  "homepage": "https://github.com/lidcore/bs-async-monad",
+  "dependencies": {
+    "bs-platform": "^4.0.0"
+  }
 }

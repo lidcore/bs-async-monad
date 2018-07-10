@@ -149,10 +149,10 @@ module Callback = struct
   let repeat condition computation cb =
     let rec exec () =
       condition () (fun [@bs] err ret ->
-        match Js.Nullable.test err, ret with
+        match Js.Nullable.isNullable err, ret with
           | true, true ->
               computation () (fun [@bs] err ret ->
-                if Js.Nullable.test err then
+                if Js.Nullable.isNullable err then
                   cb err ret [@bs]
                 else
                   setTimeout (fun [@bs] () ->
@@ -171,7 +171,7 @@ module Callback = struct
 
   let async_if cond computation cb =
     cond (fun [@bs] err ret ->
-      match Js.Nullable.test err, ret with
+      match Js.Nullable.isNullable err, ret with
         | false, _
         | _, false -> cb err () [@bs]
         | _ -> computation () cb)
