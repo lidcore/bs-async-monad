@@ -208,9 +208,12 @@ module Callback = struct
                 | None -> on_done ())
         | None -> ()
     in
-    for _ = 1 to min total concurrency do
-      setTimeout (fun [@bs] () -> process ()) 0.
-    done
+    if total = 0 then
+      return () cb
+    else
+      for _ = 1 to min total concurrency do
+        setTimeout (fun [@bs] () -> process ()) 0.
+      done
 
   let iter ?concurrency fn l =
     itera ?concurrency fn (Array.of_list l)
