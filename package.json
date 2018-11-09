@@ -1,6 +1,6 @@
 {
   "name": "bs-async-monad",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "BsAsyncMonad monad for bucklescript applications",
   "main": "lib/js/src/callback.js",
   "scripts": {

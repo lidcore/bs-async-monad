@@ -5,6 +5,7 @@ var List = require("bs-platform/lib/js/list.js");
 var $$Array = require("bs-platform/lib/js/array.js");
 var Curry = require("bs-platform/lib/js/curry.js");
 var Js_exn = require("bs-platform/lib/js/js_exn.js");
+var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
 var Caml_exceptions = require("bs-platform/lib/js/caml_exceptions.js");
 
 function $$return(x, cb) {
@@ -403,6 +404,69 @@ function seq(concurrency, l) {
   return seqa(concurrency, $$Array.of_list(l));
 }
 
+function resolvea(concurrency, a) {
+  var resolving = /* record */[/* contents : [] */0];
+  var wrap = function (fn) {
+    var can_resolve = /* record */[/* contents */false];
+    var callback = /* record */[/* contents */undefined];
+    var wrap$1 = function (cb) {
+      return (function (err, ret) {
+          cb(err, ret);
+          var match = resolving[0];
+          if (match) {
+            resolving[0] = match[1];
+            return Curry._1(match[0], /* () */0);
+          } else {
+            return /* () */0;
+          }
+        });
+    };
+    var resolve = function () {
+      var match = callback[0];
+      if (match !== undefined) {
+        return Curry._1(fn, Js_primitive.valFromOption(match));
+      } else {
+        can_resolve[0] = true;
+        return /* () */0;
+      }
+    };
+    var fn$1 = function (cb) {
+      if (can_resolve[0]) {
+        return Curry._1(fn, wrap$1(cb));
+      } else {
+        callback[0] = Js_primitive.some(wrap$1(cb));
+        return /* () */0;
+      }
+    };
+    return /* tuple */[
+            can_resolve,
+            resolve,
+            fn$1
+          ];
+  };
+  if (a.length <= concurrency) {
+    return a;
+  } else {
+    var mapped = $$Array.map(wrap, a);
+    var can_resolve = $$Array.map((function (param) {
+            param[0][0] = true;
+            return param[2];
+          }), mapped.slice(0, concurrency));
+    var pending = $$Array.map((function (param) {
+            resolving[0] = /* :: */[
+              param[1],
+              resolving[0]
+            ];
+            return param[2];
+          }), mapped.slice(concurrency));
+    return $$Array.append(can_resolve, pending);
+  }
+}
+
+function resolve(concurrency, l) {
+  return $$Array.to_list(resolvea(concurrency, $$Array.of_list(l)));
+}
+
 function execute($staropt$star, t, cb) {
   var exceptionHandler = $staropt$star !== undefined ? $staropt$star : (function (exn) {
         throw exn;
@@ -604,6 +668,13 @@ function Make(Wrapper) {
   var seq = function (concurrency, l) {
     return seqa$1(concurrency, $$Array.of_list(l));
   };
+  var resolvea$1 = function (concurrency, a) {
+    var a$1 = $$Array.map(Wrapper[/* to_callback */2], a);
+    return $$Array.map(Wrapper[/* from_callback */3], resolvea(concurrency, a$1));
+  };
+  var resolve = function (concurrency, l) {
+    return $$Array.to_list(resolvea$1(concurrency, $$Array.of_list(l)));
+  };
   var execute$1 = function (exceptionHandler, p, cb) {
     return execute(exceptionHandler, Curry._1(Wrapper[/* to_callback */2], p), cb);
   };
@@ -641,6 +712,8 @@ function Make(Wrapper) {
           /* mapi */mapi$1,
           /* seqa */seqa$1,
           /* seq */seq,
+          /* resolvea */resolvea$1,
+          /* resolve */resolve,
           /* execute */execute$1,
           /* finish */finish
         ];
@@ -857,6 +930,15 @@ function seq$1(concurrency, l) {
   return seqa$1(concurrency, $$Array.of_list(l));
 }
 
+function resolvea$1(concurrency, a) {
+  var a$1 = $$Array.map(from_promise, a);
+  return $$Array.map(to_promise, resolvea(concurrency, a$1));
+}
+
+function resolve$1(concurrency, l) {
+  return $$Array.to_list(resolvea$1(concurrency, $$Array.of_list(l)));
+}
+
 function execute$1(exceptionHandler, p, cb) {
   return execute(exceptionHandler, (function (param) {
                 return from_promise(p, param);
@@ -932,6 +1014,8 @@ var Callback = [
   mapi,
   seqa,
   seq,
+  resolvea,
+  resolve,
   execute,
   finish
 ];
@@ -965,6 +1049,8 @@ var Promise$1 = [
   mapi$1,
   seqa$1,
   seq$1,
+  resolvea$1,
+  resolve$1,
   execute$1,
   finish$1
 ];

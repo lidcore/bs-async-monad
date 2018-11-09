@@ -28,6 +28,8 @@ module type Async_t = sig
   val mapi : ?concurrency:int -> (int -> 'a -> 'b t) -> 'a list -> 'b list t
   val seqa : ?concurrency:int -> unit t array -> unit t
   val seq  : ?concurrency:int -> unit t list -> unit t
+  val resolvea : concurrency:int -> 'a t array -> 'a t array
+  val resolve : concurrency:int -> 'a t list -> 'a t list
   val execute : ?exceptionHandler:(exn->unit) -> 'a t -> ('a -> unit) -> unit
   val finish  : ?exceptionHandler:(exn->unit) -> unit t -> unit
 end
@@ -281,6 +283,57 @@ module Callback = struct
   let seq ?concurrency l =
     seqa ?concurrency (Array.of_list l)
 
+  let resolvea ~concurrency a =
+    let resolving = ref [] in
+    let pop_resolving () =
+      match !resolving with
+        | el::tl ->
+            resolving := tl;
+            el ()
+        | _ -> ()
+    in
+    let wrap fn =
+      let can_resolve = ref false in
+      let callback = ref None in
+      let wrap cb = fun [@bs] err ret ->
+        cb err ret [@bs];
+        pop_resolving ()
+      in
+      let resolve () =
+        match !callback with
+          | None ->
+              can_resolve := true
+          | Some cb ->
+              fn cb
+      in
+      let fn cb =
+        if !can_resolve then
+          fn (wrap cb)
+        else
+          callback := Some (wrap cb)
+      in
+      can_resolve, resolve, fn
+    in
+    if Array.length a <= concurrency then
+      a
+    else
+      let mapped = Array.map wrap a in
+      let can_resolve =
+        Array.map (fun (can_resolve, _, fn) ->
+          can_resolve := true;
+          fn) (Js.Array.slice ~start:0 ~end_:concurrency mapped)
+      in
+      let pending =
+        Array.map (fun (_, resolve, fn) ->
+          resolving := resolve::!resolving;
+          fn) (Js.Array.sliceFrom concurrency mapped)
+      in
+      Array.append can_resolve pending 
+
+  let resolve ~concurrency l =
+    Array.to_list
+      (resolvea ~concurrency (Array.of_list l))
+
   let execute ?(exceptionHandler=fun exn -> raise exn) t cb =
     t (fun [@bs] err ret ->
       match Js.toOption err with
@@ -483,6 +536,15 @@ module Make(Wrapper:Wrapper_t) = struct
       (Callback.seqa ?concurrency a)
   let seq ?concurrency l =
     seqa ?concurrency (Array.of_list l)
+  let resolvea ~concurrency a =
+    let a =
+      Array.map Wrapper.to_callback a
+    in
+    Array.map Wrapper.from_callback
+      (Callback.resolvea ~concurrency a)
+  let resolve ~concurrency l =
+    Array.to_list
+      (resolvea ~concurrency (Array.of_list l))
   let execute ?exceptionHandler p cb =
     Callback.execute ?exceptionHandler
       (Wrapper.to_callback p) cb
