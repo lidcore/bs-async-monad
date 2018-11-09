@@ -411,28 +411,24 @@ function resolvea($staropt$star, concurrency, a) {
           });
       });
   var resolving = /* record */[/* contents : [] */0];
-  var pop_resolving = function () {
-    var match = resolving[0];
-    if (match) {
-      resolving[0] = match[1];
-      return Curry._1(match[0], /* () */0);
-    } else {
-      return /* () */0;
-    }
-  };
   var wrap = function (fn) {
     var can_resolve = /* record */[/* contents */false];
     var callback = /* record */[/* contents */undefined];
     var wrap$1 = function (cb) {
       return (function (err, ret) {
+          cb(err, ret);
           if (err == null) {
-            return Curry._2(resolver, ret, (function (err, _) {
-                          cb(err, ret);
-                          return pop_resolving(/* () */0);
+            return Curry._2(resolver, ret, (function (_, _$1) {
+                          var match = resolving[0];
+                          if (match) {
+                            resolving[0] = match[1];
+                            return Curry._1(match[0], /* () */0);
+                          } else {
+                            return /* () */0;
+                          }
                         }));
           } else {
-            cb(err, ret);
-            return pop_resolving(/* () */0);
+            return 0;
           }
         });
     };

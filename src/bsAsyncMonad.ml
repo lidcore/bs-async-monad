@@ -296,15 +296,10 @@ module Callback = struct
       let can_resolve = ref false in
       let callback = ref None in
       let wrap cb = fun [@bs] err ret ->
+        cb err ret [@bs];
         if Js.Nullable.isNullable err then
-          resolver ret (fun [@bs] err _ ->
-            cb err ret [@bs];
+          resolver ret (fun [@bs] _ _ ->
             pop_resolving ())
-        else
-         begin
-          cb err ret [@bs];
-          pop_resolving ()
-         end
       in
       let resolve () =
         match !callback with
