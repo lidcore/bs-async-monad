@@ -404,20 +404,35 @@ function seq(concurrency, l) {
   return seqa(concurrency, $$Array.of_list(l));
 }
 
-function resolvea(concurrency, a) {
+function resolvea($staropt$star, concurrency, a) {
+  var resolver = $staropt$star !== undefined ? $staropt$star : (function () {
+        return (function (param) {
+            return param(null, /* () */0);
+          });
+      });
   var resolving = /* record */[/* contents : [] */0];
+  var pop_resolving = function () {
+    var match = resolving[0];
+    if (match) {
+      resolving[0] = match[1];
+      return Curry._1(match[0], /* () */0);
+    } else {
+      return /* () */0;
+    }
+  };
   var wrap = function (fn) {
     var can_resolve = /* record */[/* contents */false];
     var callback = /* record */[/* contents */undefined];
     var wrap$1 = function (cb) {
       return (function (err, ret) {
-          cb(err, ret);
-          var match = resolving[0];
-          if (match) {
-            resolving[0] = match[1];
-            return Curry._1(match[0], /* () */0);
+          if (err == null) {
+            return Curry._2(resolver, ret, (function (err, _) {
+                          cb(err, ret);
+                          return pop_resolving(/* () */0);
+                        }));
           } else {
-            return /* () */0;
+            cb(err, ret);
+            return pop_resolving(/* () */0);
           }
         });
     };
@@ -463,8 +478,8 @@ function resolvea(concurrency, a) {
   }
 }
 
-function resolve(concurrency, l) {
-  return $$Array.to_list(resolvea(concurrency, $$Array.of_list(l)));
+function resolve(resolver, concurrency, l) {
+  return $$Array.to_list(resolvea(resolver, concurrency, $$Array.of_list(l)));
 }
 
 function execute($staropt$star, t, cb) {
@@ -668,12 +683,21 @@ function Make(Wrapper) {
   var seq = function (concurrency, l) {
     return seqa$1(concurrency, $$Array.of_list(l));
   };
-  var resolvea$1 = function (concurrency, a) {
+  var resolvea$1 = function (resolver, concurrency, a) {
+    var resolver$1;
+    if (resolver !== undefined) {
+      var fn = resolver;
+      resolver$1 = (function (x) {
+          return Curry._1(Wrapper[/* to_callback */2], Curry._1(fn, x));
+        });
+    } else {
+      resolver$1 = undefined;
+    }
     var a$1 = $$Array.map(Wrapper[/* to_callback */2], a);
-    return $$Array.map(Wrapper[/* from_callback */3], resolvea(concurrency, a$1));
+    return $$Array.map(Wrapper[/* from_callback */3], resolvea(resolver$1, concurrency, a$1));
   };
-  var resolve = function (concurrency, l) {
-    return $$Array.to_list(resolvea$1(concurrency, $$Array.of_list(l)));
+  var resolve = function (resolver, concurrency, l) {
+    return $$Array.to_list(resolvea$1(resolver, concurrency, $$Array.of_list(l)));
   };
   var execute$1 = function (exceptionHandler, p, cb) {
     return execute(exceptionHandler, Curry._1(Wrapper[/* to_callback */2], p), cb);
@@ -930,13 +954,25 @@ function seq$1(concurrency, l) {
   return seqa$1(concurrency, $$Array.of_list(l));
 }
 
-function resolvea$1(concurrency, a) {
+function resolvea$1(resolver, concurrency, a) {
+  var resolver$1;
+  if (resolver !== undefined) {
+    var fn = resolver;
+    resolver$1 = (function (x) {
+        var partial_arg = Curry._1(fn, x);
+        return (function (param) {
+            return from_promise(partial_arg, param);
+          });
+      });
+  } else {
+    resolver$1 = undefined;
+  }
   var a$1 = $$Array.map(from_promise, a);
-  return $$Array.map(to_promise, resolvea(concurrency, a$1));
+  return $$Array.map(to_promise, resolvea(resolver$1, concurrency, a$1));
 }
 
-function resolve$1(concurrency, l) {
-  return $$Array.to_list(resolvea$1(concurrency, $$Array.of_list(l)));
+function resolve$1(resolver, concurrency, l) {
+  return $$Array.to_list(resolvea$1(resolver, concurrency, $$Array.of_list(l)));
 }
 
 function execute$1(exceptionHandler, p, cb) {

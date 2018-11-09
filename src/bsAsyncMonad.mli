@@ -78,9 +78,10 @@ module type Async_t = sig
   val seqa : ?concurrency:int -> unit t array -> unit t
   val seq  : ?concurrency:int -> unit t list -> unit t
 
-  (** Force a list or array of computations to resolve with fixed concurrency. *)
-  val resolvea : concurrency:int -> 'a t array -> 'a t array
-  val resolve  : concurrency:int -> 'a t list -> 'a t list
+  (** Force a list or array of computations to resolve with fixed concurrency.
+   * [resolver] defaults to [fun _ -> return ()] *)
+  val resolvea : ?resolver:('a -> unit t) -> concurrency:int -> 'a t array -> 'a t array
+  val resolve  : ?resolver:('a -> unit t) -> concurrency:int -> 'a t list -> 'a t list
 
   (** Execute a computation and pass its result to a callback.
    * Default [exceptionHandler] raises any received exception. *)
